@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView
+  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../api/config';
@@ -14,7 +14,7 @@ export default function AuthScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!email || !parola) return Alert.alert('Eroare', 'Completează toate câmpurile');
+    if (!email || !parola) return Alert.alert('Eroare', 'Completeaza toate campurile');
     setLoading(true);
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
@@ -34,17 +34,22 @@ export default function AuthScreen({ onLogin }) {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Text style={styles.logo}>💪 FitApp</Text>
-          <Text style={styles.subtitle}>Nutriție & Sport</Text>
+          <Image
+            source={require('../../galery/logo_app.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.logo}>FitApp</Text>
+          <Text style={styles.subtitle}>Nutritie & Sport</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.title}>{isLogin ? 'Bună revenire!' : 'Cont nou'}</Text>
+          <Text style={styles.title}>{isLogin ? 'Buna revenire!' : 'Cont nou'}</Text>
 
           {!isLogin && (
             <TextInput
               style={styles.input}
-              placeholder="Numele tău"
+              placeholder="Numele tau"
               placeholderTextColor="#888"
               value={nume}
               onChangeText={setNume}
@@ -63,7 +68,7 @@ export default function AuthScreen({ onLogin }) {
 
           <TextInput
             style={styles.input}
-            placeholder="Parolă"
+            placeholder="Parola"
             placeholderTextColor="#888"
             value={parola}
             onChangeText={setParola}
@@ -72,13 +77,13 @@ export default function AuthScreen({ onLogin }) {
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
             <Text style={styles.buttonText}>
-              {loading ? 'Se încarcă...' : isLogin ? 'Intră în cont' : 'Creează cont'}
+              {loading ? 'Se incarca...' : isLogin ? 'Intra in cont' : 'Creeaza cont'}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
             <Text style={styles.switchText}>
-              {isLogin ? 'Nu ai cont? Înregistrează-te' : 'Ai deja cont? Autentifică-te'}
+              {isLogin ? 'Nu ai cont? Inregistreaza-te' : 'Ai deja cont? Autentifica-te'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -91,6 +96,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f0f0f' },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   header: { alignItems: 'center', marginBottom: 40 },
+  logoImage: { width: 120, height: 120, marginBottom: 12 },
   logo: { fontSize: 48, fontWeight: 'bold', color: '#fff' },
   subtitle: { fontSize: 16, color: '#888', marginTop: 4 },
   card: {
