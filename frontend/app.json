@@ -4,7 +4,7 @@
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./galery/logo_app.png",
+    "icon": "./gallery/logo_app.png",
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,14 +14,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0f0f0f",
-        "foregroundImage": "./galery/logo_app.png"
+        "foregroundImage": "./gallery/logo_app.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./galery/logo_app.png"
+      "favicon": "./gallery/logo_app.png"
     },
     "plugins": [
       "expo-router",

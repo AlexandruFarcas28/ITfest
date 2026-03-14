@@ -14,11 +14,17 @@ export default function AuthScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!email || !parola) return Alert.alert('Eroare', 'Completeaza toate campurile');
+    if (!email.trim() || !parola.trim() || (!isLogin && !nume.trim())) {
+      return Alert.alert('Eroare', 'Completeaza toate campurile');
+    }
+
     setLoading(true);
+
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const body = isLogin ? { email, parola } : { nume, email, parola };
+      const body = isLogin
+        ? { email: email.trim().toLowerCase(), parola }
+        : { nume: nume.trim(), email: email.trim().toLowerCase(), parola };
       const { data } = await API.post(endpoint, body);
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
@@ -35,7 +41,7 @@ export default function AuthScreen({ onLogin }) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Image
-            source={require('../../galery/logo_app.png')}
+            source={require('../../gallery/logo_app.png')}
             style={styles.logoImage}
             resizeMode="contain"
           />

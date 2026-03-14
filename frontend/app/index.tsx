@@ -20,7 +20,7 @@ export default function App() {
   if (loading) return (
     <View style={styles.loading}>
       <Image
-        source={require('../galery/logo_app.png')}
+        source={require('../gallery/logo_app.png')}
         style={styles.logo}
         resizeMode="contain"
       />
