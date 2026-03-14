@@ -1,67 +1,86 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import TopNav from '../../src/components/TopNav';
+import { commonStyles } from '../../src/styles/common';
+import { COLORS } from '../../src/styles/theme';
 
 export default function WaterScreen() {
   const [water, setWater] = useState(1500);
   const goal = 2500;
-  const progress = Math.min((water / goal) * 100, 100);
+
+  const progress = useMemo(() => Math.min((water / goal) * 100, 100), [water]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Water Tracker</Text>
-      <Text style={styles.value}>{water} ml</Text>
-      <Text style={styles.subtitle}>Goal: {goal} ml</Text>
+    <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
 
-      <View style={styles.progressBar}>
-        <View style={[styles.progressFill, { width: `${progress}%` }]} />
+      <Text style={commonStyles.kicker}>HYDRATION</Text>
+      <Text style={commonStyles.title}>Water tracker</Text>
+      <Text style={commonStyles.subtitle}>
+        Stay consistent with your daily hydration target.
+      </Text>
+
+      <View style={commonStyles.card}>
+        <Text style={styles.heroValue}>{water} ml</Text>
+        <Text style={styles.heroLabel}>Goal: {goal} ml</Text>
+
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        </View>
+
+        <Text style={styles.progressText}>{Math.round(progress)}% completed</Text>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => setWater(water + 250)}>
-        <Text style={styles.buttonText}>+250 ml</Text>
-      </TouchableOpacity>
+      <View style={styles.actions}>
+        <TouchableOpacity style={commonStyles.secondaryButton} onPress={() => setWater(water + 250)}>
+          <Text style={commonStyles.secondaryButtonText}>+250 ml</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => setWater(water + 500)}>
-        <Text style={styles.buttonText}>+500 ml</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={commonStyles.secondaryButton} onPress={() => setWater(water + 500)}>
+          <Text style={commonStyles.secondaryButtonText}>+500 ml</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.resetButton} onPress={() => setWater(0)}>
-        <Text style={styles.resetText}>Reset</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={[commonStyles.primaryButton, styles.resetButton]} onPress={() => setWater(0)}>
+          <Text style={commonStyles.primaryButtonText}>Reset</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0A', padding: 16 },
-  title: { color: '#fff', fontSize: 28, fontWeight: '900', marginBottom: 10 },
-  value: { color: '#fff', fontSize: 40, fontWeight: '900' },
-  subtitle: { color: '#888', marginTop: 4, marginBottom: 18 },
+  heroValue: {
+    color: COLORS.text,
+    fontSize: 34,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  heroLabel: {
+    color: COLORS.subtitle,
+    fontSize: 14,
+    marginBottom: 16,
+  },
   progressBar: {
     height: 18,
-    backgroundColor: '#151515',
+    backgroundColor: COLORS.cardInner,
     borderRadius: 999,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#232323',
-    marginBottom: 18,
-  },
-  progressFill: { height: '100%', backgroundColor: '#22C55E' },
-  button: {
-    backgroundColor: '#151515',
-    borderColor: '#232323',
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
+    borderColor: COLORS.border,
     marginBottom: 10,
   },
-  buttonText: { color: '#fff', fontWeight: '800' },
-  resetButton: {
-    backgroundColor: '#22C55E',
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
+  progressFill: {
+    height: '100%',
+    backgroundColor: COLORS.accent,
   },
-  resetText: { color: '#04130A', fontWeight: '900' },
+  progressText: {
+    color: COLORS.muted,
+    fontSize: 13,
+  },
+  actions: {
+    gap: 12,
+  },
+  resetButton: {
+    marginTop: 4,
+  },
 });

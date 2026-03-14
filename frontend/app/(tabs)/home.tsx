@@ -1,41 +1,62 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import TopNav from '../../src/components/TopNav';
+import { commonStyles } from '../../src/styles/common';
+import { COLORS } from '../../src/styles/theme';
 
-function Card({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+    <View style={commonStyles.card}>
+      <Text style={styles.cardLabel}>{label}</Text>
+      <Text style={styles.cardValue}>{value}</Text>
+      {hint ? <Text style={styles.cardHint}>{hint}</Text> : null}
     </View>
   );
 }
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.kicker}>DASHBOARD</Text>
-      <Text style={styles.title}>Today’s progress</Text>
+    <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
 
-      <Card label="Steps" value="7,241" />
-      <Card label="Calories" value="1,840 kcal" />
-      <Card label="Water" value="1.5 L" />
-      <Card label="Goal" value="Cut" />
-    </View>
+      <Text style={commonStyles.kicker}>DASHBOARD</Text>
+      <Text style={commonStyles.title}>Today’s progress</Text>
+      <Text style={commonStyles.subtitle}>
+        Track your activity, nutrition and hydration in one place.
+      </Text>
+
+      <View style={styles.section}>
+        <Text style={commonStyles.sectionTitle}>Quick stats</Text>
+        <StatCard label="Steps" value="7,241" hint="daily activity" />
+        <StatCard label="Calories" value="1,840 kcal" hint="consumed today" />
+        <StatCard label="Water" value="1.5 L" hint="hydration progress" />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={commonStyles.sectionTitle}>Current goal</Text>
+        <StatCard label="Goal" value="Cut" hint="active plan" />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0A', padding: 16 },
-  kicker: { color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 2, marginBottom: 8 },
-  title: { color: '#fff', fontSize: 28, fontWeight: '900', marginBottom: 18 },
-  card: {
-    backgroundColor: '#151515',
-    borderWidth: 1,
-    borderColor: '#232323',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 12,
+  section: {
+    marginBottom: 24,
   },
-  label: { color: '#888', marginBottom: 6 },
-  value: { color: '#fff', fontSize: 22, fontWeight: '800' },
+  cardLabel: {
+    color: COLORS.muted,
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  cardValue: {
+    color: COLORS.text,
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  cardHint: {
+    color: COLORS.subtitle,
+    fontSize: 13,
+  },
 });
