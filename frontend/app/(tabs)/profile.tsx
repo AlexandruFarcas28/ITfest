@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import InteractivePressable from '../../src/components/InteractivePressable';
+import TopNav from '../../src/components/TopNav';
 import {
   clearStoredProfile,
   getStoredProfile,
@@ -11,7 +12,8 @@ import {
   type StoredProfile,
 } from '../../src/storage/profile';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS, RADIUS } from '../../src/styles/theme';
+import { COLORS } from '../../src/styles/theme';
+import { profileScreenStyles as styles } from '../../src/styles/screens/tabs';
 
 type StoredUser = {
   id?: string;
@@ -115,6 +117,8 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
+
       <View style={styles.identityCard}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{name ? name.charAt(0).toUpperCase() : 'F'}</Text>
@@ -181,50 +185,3 @@ export default function ProfileScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  identityCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.xl,
-    padding: 20,
-    marginBottom: 24,
-  },
-  avatar: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: COLORS.accentDark,
-    fontSize: 24,
-    fontWeight: '900',
-  },
-  identityContent: {
-    flex: 1,
-  },
-  identityName: {
-    color: COLORS.text,
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: 4,
-  },
-  identityEmail: {
-    color: COLORS.subtitle,
-    fontSize: 14,
-  },
-  inputLast: {
-    marginBottom: 0,
-  },
-  primarySpacing: {
-    marginTop: 2,
-    marginBottom: 12,
-  },
-});

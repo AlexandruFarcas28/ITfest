@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import TopNav from '../../src/components/TopNav';
 import TrendChart from '../../src/components/TrendChart';
 import { getStoredProfile, mergeStoredProfile } from '../../src/storage/profile';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS, RADIUS } from '../../src/styles/theme';
+import { COLORS } from '../../src/styles/theme';
+import { metricsScreenStyles as styles } from '../../src/styles/screens/tabs';
 
 export default function MetricsScreen() {
   const [weight, setWeight] = useState('80');
@@ -91,6 +93,8 @@ export default function MetricsScreen() {
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
+
       <LinearGradient
         colors={['#6F2107', '#0D4B50']}
         start={{ x: 0, y: 0 }}
@@ -157,71 +161,3 @@ export default function MetricsScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  heroCard: {
-    borderRadius: RADIUS.xl,
-    padding: 22,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  heroKicker: {
-    color: COLORS.highlight,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.6,
-    marginBottom: 10,
-  },
-  heroValue: {
-    color: COLORS.text,
-    fontSize: 42,
-    fontWeight: '900',
-    marginBottom: 4,
-  },
-  heroLabel: {
-    color: COLORS.subtitle,
-    fontSize: 15,
-    marginBottom: 18,
-  },
-  goalPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.accentSoft,
-    borderRadius: RADIUS.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  goalPillText: {
-    color: COLORS.accent,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  inputSpacing: {
-    marginBottom: 14,
-  },
-  inputLast: {
-    marginBottom: 0,
-  },
-  resultGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  resultCard: {
-    width: '48%',
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-  },
-  resultLabel: {
-    color: COLORS.muted,
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  resultValue: {
-    color: COLORS.text,
-    fontSize: 23,
-    fontWeight: '900',
-  },
-});
