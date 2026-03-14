@@ -4,35 +4,15 @@
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-<<<<<<< HEAD
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-=======
     "icon": "./gallery/logo_app.png",
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
->>>>>>> 4f1a08f30018e292fba5b5d4ed3056cf3570ce32
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-<<<<<<< HEAD
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-=======
         "backgroundColor": "#0f0f0f",
         "foregroundImage": "./gallery/logo_app.png"
       },
@@ -60,7 +40,6 @@
     ],
     "experiments": {
       "typedRoutes": true
->>>>>>> 4f1a08f30018e292fba5b5d4ed3056cf3570ce32
     }
   }
 }
