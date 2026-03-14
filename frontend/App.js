@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -36,3 +37,6 @@ export default function App() {
     </NavigationContainer>
   );
 }
+=======
+export { default } from './app/index';
+>>>>>>> 4f1a08f30018e292fba5b5d4ed3056cf3570ce32
