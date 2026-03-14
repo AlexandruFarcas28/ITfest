@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import InteractivePressable from '../../src/components/InteractivePressable';
 import { API_BASE_URL } from '../../src/api/config';
@@ -191,11 +192,11 @@ export default function MealScanScreen() {
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
 
-      <Text style={commonStyles.kicker}>AI MEAL SCAN</Text>
-      <Text style={commonStyles.title}>Scan your meal</Text>
-      <Text style={commonStyles.subtitle}>
-        Take a photo of your food and get an approximate calorie and macro estimate.
-      </Text>
+      <ScreenHeader
+        kicker="AI MEAL SCAN"
+        title="Scan your meal"
+        subtitle="Take a photo of your food and get an approximate calorie and macro estimate."
+      />
 
       <InteractivePressable style={[commonStyles.primaryButton, styles.space]} onPress={takePhoto}>
         <Text style={commonStyles.primaryButtonText}>Open Camera</Text>

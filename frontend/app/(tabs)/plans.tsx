@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, ScrollView, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import { commonStyles } from '../../src/styles/common';
 import { plansScreenStyles as styles } from '../../src/styles/screens/tabs';
@@ -30,30 +31,30 @@ export default function PlansScreen() {
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
 
-      <Text style={commonStyles.kicker}>PLANS</Text>
-      <Text style={commonStyles.title}>Choose your goal</Text>
-      <Text style={commonStyles.subtitle}>
-        Pick a simple direction based on your current objective and stay consistent.
-      </Text>
+      <ScreenHeader
+        kicker="PLANS"
+        title="Choose your goal"
+        subtitle="Pick a simple direction based on your current objective and stay consistent."
+      />
 
       <PlanCard
         title="Cut"
         calories="~ 1,900 kcal / day"
-        macros="High protein • Moderate carbs • Lower fats"
+        macros="High protein / Moderate carbs / Lower fats"
         description="Best for fat loss while keeping muscle mass and improving definition."
       />
 
       <PlanCard
         title="Bulk"
         calories="~ 2,800 kcal / day"
-        macros="High protein • High carbs • Moderate fats"
+        macros="High protein / High carbs / Moderate fats"
         description="Best for muscle gain, strength progress and steady weight increase."
       />
 
       <PlanCard
         title="Recomp"
         calories="~ 2,300 kcal / day"
-        macros="High protein • Balanced carbs • Balanced fats"
+        macros="High protein / Balanced carbs / Balanced fats"
         description="Best for beginners or people returning to training who want gradual body improvement."
       />
     </ScrollView>

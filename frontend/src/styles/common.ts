@@ -1,30 +1,38 @@
-import { StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 import { COLORS, FONT, RADIUS, SPACING } from './theme';
 
 export const commonStyles = StyleSheet.create({
   screen: {
     flexGrow: 1,
     backgroundColor: COLORS.bg,
-    paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.md,
-    paddingBottom: 48,
+    paddingHorizontal: SPACING.screen,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xxxl + SPACING.md,
   },
 
   card: {
     backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.lg,
+    borderColor: COLORS.borderSoft,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.card,
+    marginBottom: SPACING.xl,
   },
 
   glassCard: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
+    borderColor: COLORS.borderSoft,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.card,
+  },
+
+  pageHeader: {
+    marginBottom: SPACING.xl,
+  },
+
+  pageHeaderCompact: {
+    marginBottom: SPACING.lg,
   },
 
   kicker: {
@@ -32,29 +40,30 @@ export const commonStyles = StyleSheet.create({
     fontSize: FONT.kicker,
     fontWeight: '800',
     letterSpacing: 2.2,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
   },
 
   title: {
     color: COLORS.text,
     fontSize: FONT.title,
     fontWeight: '900',
-    lineHeight: 35,
-    marginBottom: SPACING.sm,
+    lineHeight: 37,
+    marginBottom: SPACING.md,
   },
 
   subtitle: {
     color: COLORS.subtitle,
     fontSize: FONT.body,
     lineHeight: 22,
-    marginBottom: SPACING.xl,
+    maxWidth: 620,
   },
 
   sectionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
+    marginTop: SPACING.sm,
   },
 
   sectionTitle: {
@@ -69,23 +78,31 @@ export const commonStyles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  sectionCard: {
+    marginBottom: SPACING.section,
+  },
+
   input: {
     backgroundColor: COLORS.cardInner,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderSoft,
     borderWidth: 1,
     borderRadius: RADIUS.md,
     color: COLORS.text,
     paddingHorizontal: SPACING.lg,
+    minHeight: 58,
     paddingVertical: SPACING.lg,
     fontSize: FONT.body,
-    marginBottom: 14,
+    marginBottom: SPACING.md,
   },
 
   primaryButton: {
     backgroundColor: COLORS.accent,
     borderRadius: RADIUS.md,
+    minHeight: 56,
+    paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: COLORS.accent,
     shadowOpacity: 0.22,
     shadowRadius: 18,
@@ -103,10 +120,13 @@ export const commonStyles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderSoft,
     borderRadius: RADIUS.md,
+    minHeight: 56,
+    paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 
   secondaryButtonText: {
@@ -130,5 +150,10 @@ export const commonStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.6,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.borderSoft,
   },
 });

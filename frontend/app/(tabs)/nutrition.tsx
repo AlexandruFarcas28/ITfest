@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import InteractivePressable from '../../src/components/InteractivePressable';
 import TrendChart from '../../src/components/TrendChart';
@@ -88,6 +89,12 @@ export default function NutritionScreen() {
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
 
+      <ScreenHeader
+        kicker="NUTRITION"
+        title="Track meals with less friction."
+        subtitle="Keep calories and macros visible, then add quick entries or scanned meals without clutter."
+      />
+
       <LinearGradient
         colors={['#0D4B50', '#6F2107']}
         start={{ x: 0, y: 0 }}
@@ -149,7 +156,7 @@ export default function NutritionScreen() {
 
       {foods.map((food, index) => (
         <View key={`${food.name}-${index}`} style={styles.foodCard}>
-          <View>
+          <View style={styles.foodContent}>
             <Text style={styles.foodName}>{food.name}</Text>
             <Text style={styles.foodHint}>{food.note || `${food.source} entry`}</Text>
           </View>

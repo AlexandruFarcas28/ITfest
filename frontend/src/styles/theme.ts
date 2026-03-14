@@ -4,7 +4,9 @@ export const COLORS = {
   surface: '#133539',
   card: '#164247',
   cardInner: '#103236',
+  overlay: 'rgba(6, 20, 22, 0.72)',
   border: '#2A6469',
+  borderSoft: 'rgba(91, 144, 146, 0.32)',
   text: '#FFF3E8',
   muted: '#A7C4C1',
   subtitle: '#C7D7D4',
@@ -25,6 +27,9 @@ export const SPACING = {
   xl: 24,
   xxl: 30,
   xxxl: 38,
+  screen: 22,
+  section: 28,
+  card: 20,
 };
 
 export const RADIUS = {
@@ -32,11 +37,13 @@ export const RADIUS = {
   md: 18,
   lg: 24,
   xl: 30,
+  xxl: 34,
   pill: 999,
 };
 
 export const FONT = {
   kicker: 12,
+  bodySm: 14,
   body: 15,
   section: 18,
   title: 31,

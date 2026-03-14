@@ -1,7 +1,8 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, usePathname } from 'expo-router';
-import { COLORS } from '../styles/theme';
+import InteractivePressable from './InteractivePressable';
+import { COLORS, FONT, RADIUS, SPACING } from '../styles/theme';
 
 type AppRoute =
   | '/(tabs)/home'
@@ -29,26 +30,32 @@ export default function TopNav() {
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.brand}>FITAPP</Text>
+      <View style={styles.brandRow}>
+        <Text style={styles.brand}>FITAPP</Text>
+      </View>
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        bounces={false}
+        contentInsetAdjustmentBehavior="never"
         contentContainerStyle={styles.row}
       >
         {tabs.map((tab) => {
           const active = pathname === tab.path;
 
           return (
-            <TouchableOpacity
+            <InteractivePressable
               key={tab.path}
               onPress={() => router.replace(tab.path as never)}
               style={[styles.tab, active && styles.tabActive]}
+              hitSlop={6}
             >
               <Text style={[styles.tabText, active && styles.tabTextActive]}>
                 {tab.label}
               </Text>
-            </TouchableOpacity>
+            </InteractivePressable>
           );
         })}
       </ScrollView>
@@ -58,37 +65,49 @@ export default function TopNav() {
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 28,
+    marginBottom: SPACING.section,
+  },
+  brandRow: {
+    marginBottom: SPACING.md,
   },
   brand: {
     color: COLORS.accent,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 2,
-    marginBottom: 14,
+    fontSize: FONT.kicker,
+    fontWeight: '900',
+    letterSpacing: 3,
   },
   row: {
-    gap: 10,
-    paddingRight: 8,
+    gap: SPACING.sm,
+    paddingRight: SPACING.lg,
+    paddingBottom: 4,
   },
   tab: {
     backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderColor: COLORS.borderSoft,
+    borderRadius: RADIUS.md,
+    minHeight: 54,
+    minWidth: 92,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tabActive: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: COLORS.accentSoft,
     borderColor: COLORS.accent,
+    shadowColor: COLORS.accent,
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
   tabText: {
-    color: '#A0A0A0',
+    color: COLORS.muted,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   tabTextActive: {
-    color: COLORS.accentDark,
+    color: COLORS.text,
   },
 });

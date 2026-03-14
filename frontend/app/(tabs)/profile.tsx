@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import InteractivePressable from '../../src/components/InteractivePressable';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import {
   clearStoredProfile,
@@ -118,6 +119,12 @@ export default function ProfileScreen() {
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
+
+      <ScreenHeader
+        kicker="PROFILE"
+        title="Personal details that stay current."
+        subtitle="Keep your identity and body metrics aligned so the rest of the app reflects the right context."
+      />
 
       <View style={styles.identityCard}>
         <View style={styles.avatar}>

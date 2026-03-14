@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import TrendChart from '../../src/components/TrendChart';
 import { getStoredProfile, mergeStoredProfile } from '../../src/storage/profile';
@@ -94,6 +95,12 @@ export default function MetricsScreen() {
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
+
+      <ScreenHeader
+        kicker="METRICS"
+        title="See progress clearly."
+        subtitle="Body stats, BMI and trend context are grouped here so updates stay simple and readable."
+      />
 
       <LinearGradient
         colors={['#6F2107', '#0D4B50']}

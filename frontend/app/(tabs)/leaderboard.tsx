@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, ScrollView, View } from 'react-native';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import { commonStyles } from '../../src/styles/common';
 import { leaderboardScreenStyles as styles } from '../../src/styles/screens/tabs';
@@ -17,11 +18,11 @@ export default function LeaderboardScreen() {
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
 
-      <Text style={commonStyles.kicker}>LEADERBOARD</Text>
-      <Text style={commonStyles.title}>Top performers</Text>
-      <Text style={commonStyles.subtitle}>
-        A simple ranking view for activity, consistency or community challenges.
-      </Text>
+      <ScreenHeader
+        kicker="LEADERBOARD"
+        title="Top performers"
+        subtitle="A simple ranking view for activity, consistency or community challenges."
+      />
 
       {users.map((user) => (
         <View key={user.rank} style={commonStyles.card}>

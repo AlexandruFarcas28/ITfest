@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { COLORS, RADIUS } from '../styles/theme';
+import { COLORS, FONT, RADIUS, SPACING } from '../styles/theme';
 
 const CHART_HEIGHT = 116;
 
@@ -163,36 +163,36 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-    marginBottom: 22,
+    borderColor: COLORS.borderSoft,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.card,
+    marginBottom: SPACING.section,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 12,
-    marginBottom: 14,
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   headerText: {
     flex: 1,
   },
   title: {
     color: COLORS.text,
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 4,
+    fontSize: FONT.section,
+    fontWeight: '900',
+    marginBottom: 6,
   },
   subtitle: {
     color: COLORS.subtitle,
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: FONT.bodySm,
+    lineHeight: 20,
   },
   deltaBadge: {
     borderRadius: RADIUS.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.xs + 1,
   },
   deltaUp: {
     backgroundColor: COLORS.accentSoft,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: SPACING.lg,
   },
   summaryLabel: {
     color: COLORS.muted,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   chartShell: {
     justifyContent: 'flex-end',
-    marginBottom: 10,
+    marginBottom: SPACING.sm,
   },
   targetLine: {
     position: 'absolute',
@@ -250,21 +250,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    gap: 14,
+    gap: SPACING.sm + 2,
   },
   barColumn: {
     flex: 1,
     alignItems: 'center',
   },
   barTrack: {
-    width: '92%',
+    width: '100%',
     backgroundColor: COLORS.cardInner,
-    borderRadius: 14,
+    borderRadius: RADIUS.sm,
     justifyContent: 'flex-end',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.04)',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   barFill: {
     width: '100%',

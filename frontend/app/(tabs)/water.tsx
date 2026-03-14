@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, ScrollView, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ScreenHeader from '../../src/components/ScreenHeader';
 import TopNav from '../../src/components/TopNav';
 import InteractivePressable from '../../src/components/InteractivePressable';
 import TrendChart from '../../src/components/TrendChart';
@@ -44,6 +45,12 @@ export default function WaterScreen() {
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
+
+      <ScreenHeader
+        kicker="HYDRATION"
+        title="Keep water intake in rhythm."
+        subtitle="Fast actions, a clear progress state and weekly context keep the habit lightweight on mobile."
+      />
 
       <LinearGradient
         colors={['#0D4B50', '#19A7A0']}

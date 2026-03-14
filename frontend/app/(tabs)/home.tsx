@@ -33,7 +33,7 @@ type HabitRowProps = {
 function HabitRow({ title, detail, value }: HabitRowProps) {
   return (
     <View style={styles.habitRow}>
-      <View>
+      <View style={styles.habitTextWrap}>
         <Text style={styles.habitTitle}>{title}</Text>
         <Text style={styles.habitDetail}>{detail}</Text>
       </View>
