@@ -1,8 +1,13 @@
-from flask import Blueprint, jsonify, request
-from bson import ObjectId
 from datetime import datetime, date
-from db import mongo
-from auth_utils import token_required
+from bson import ObjectId
+from flask import Blueprint, jsonify, request
+
+try:
+    from ..auth_utils import token_required
+    from ..db import mongo
+except ImportError:
+    from auth_utils import token_required
+    from db import mongo
 
 nutrition_bp = Blueprint("nutrition", __name__, url_prefix="/api/nutrition")
 

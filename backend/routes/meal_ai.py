@@ -22,6 +22,15 @@ def _extract_output_text(payload):
       if isinstance(text_value, dict) and isinstance(text_value.get("value"), str):
         return text_value["value"]
 
+  for candidate in payload.get("candidates", []):
+    content = candidate.get("content", {})
+
+    for part in content.get("parts", []):
+      text_value = part.get("text")
+
+      if isinstance(text_value, str) and text_value.strip():
+        return text_value
+
   return None
 
 
@@ -55,30 +64,78 @@ def _normalize_result(parsed):
   }
 
 
+def _build_generation_schema():
+  return {
+    "type": "object",
+    "propertyOrdering": [
+      "detected_foods",
+      "estimated_calories",
+      "protein_g",
+      "carbs_g",
+      "fats_g",
+      "confidence",
+      "notes",
+    ],
+    "properties": {
+      "detected_foods": {
+        "type": "array",
+        "items": {"type": "string"},
+      },
+      "estimated_calories": {
+        "type": ["number", "null"],
+      },
+      "protein_g": {
+        "type": ["number", "null"],
+      },
+      "carbs_g": {
+        "type": ["number", "null"],
+      },
+      "fats_g": {
+        "type": ["number", "null"],
+      },
+      "confidence": {
+        "type": "string",
+        "enum": ["low", "medium", "high"],
+      },
+      "notes": {"type": "string"},
+    },
+    "required": [
+      "detected_foods",
+      "estimated_calories",
+      "protein_g",
+      "carbs_g",
+      "fats_g",
+      "confidence",
+      "notes",
+    ],
+  }
+
+
 @meal_ai_bp.route("/ai/estimate-meal", methods=["POST", "OPTIONS"])
 def estimate_meal():
   if request.method == "OPTIONS":
     return ("", 204)
 
-  openai_api_key = os.getenv("OPENAI_API_KEY")
-  model = os.getenv("OPENAI_MEAL_MODEL", "gpt-4.1-mini")
+  try:
+    gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    model = os.getenv("GEMINI_MEAL_MODEL", "gemini-2.5-flash")
 
-  if not openai_api_key:
-    return jsonify({"error": "OPENAI_API_KEY is missing on the server"}), 500
+    if not gemini_api_key:
+      return jsonify({"error": "GEMINI_API_KEY is missing on the server"}), 500
 
-  if "image" not in request.files:
-    return jsonify({"error": "No image uploaded"}), 400
+    if "image" not in request.files:
+      return jsonify({"error": "No image uploaded"}), 400
 
-  image_file = request.files["image"]
-  image_bytes = image_file.read()
-  image_mime_type = image_file.mimetype or "image/jpeg"
+    image_file = request.files["image"]
+    image_bytes = image_file.read()
+    image_mime_type = image_file.mimetype or "image/jpeg"
 
-  if not image_bytes:
-    return jsonify({"error": "Empty image"}), 400
+    if not image_bytes:
+      return jsonify({"error": "Empty image"}), 400
 
-  base64_image = base64.b64encode(image_bytes).decode("utf-8")
+    base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
-  prompt = """
+    prompt = """
 You are a nutrition estimation assistant.
 Analyze the meal photo and return ONLY valid JSON with this exact structure:
 {
@@ -98,45 +155,48 @@ Rules:
 - Do not return extra explanation outside JSON.
 """
 
-  try:
     response = requests.post(
-      "https://api.openai.com/v1/responses",
+      f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
       headers={
-        "Authorization": f"Bearer {openai_api_key}",
         "Content-Type": "application/json",
+        "x-goog-api-key": gemini_api_key,
       },
       json={
-        "model": model,
-        "input": [
+        "contents": [
           {
-            "role": "user",
-            "content": [
-              {"type": "input_text", "text": prompt},
+            "parts": [
+              {"text": prompt},
               {
-                "type": "input_image",
-                "image_url": f"data:{image_mime_type};base64,{base64_image}",
+                "inline_data": {
+                  "mime_type": image_mime_type,
+                  "data": base64_image,
+                }
               },
-            ],
+            ]
           }
         ],
-        "text": {
-          "format": {
-            "type": "json_object"
-          }
-        }
+        "generationConfig": {
+          "responseMimeType": "application/json",
+          "responseJsonSchema": _build_generation_schema(),
+        },
       },
       timeout=60,
     )
   except requests.Timeout:
     return jsonify({
-      "error": "OpenAI request timed out",
-      "details": "Serverul nu a primit raspuns de la OpenAI in intervalul asteptat."
+      "error": "Gemini request timed out",
+      "details": "Serverul nu a primit raspuns de la Gemini in intervalul asteptat."
     }), 504
   except requests.RequestException as exc:
     return jsonify({
-      "error": "OpenAI request could not be completed",
+      "error": "Gemini request could not be completed",
       "details": str(exc)
     }), 502
+  except Exception as exc:
+    return jsonify({
+      "error": "Gemini integration error",
+      "details": str(exc)
+    }), 500
 
   if response.status_code != 200:
     try:
@@ -146,7 +206,7 @@ Rules:
       error_message = response.text
 
     return jsonify({
-      "error": "OpenAI request failed",
+      "error": "Gemini request failed",
       "details": error_message
     }), response.status_code
 
@@ -155,7 +215,7 @@ Rules:
 
   if not output_text:
     return jsonify({
-      "error": "Unexpected AI response format",
+      "error": "Unexpected Gemini response format",
       "details": payload
     }), 500
 
@@ -163,7 +223,7 @@ Rules:
     parsed = json.loads(output_text)
   except json.JSONDecodeError:
     return jsonify({
-      "error": "AI did not return valid JSON",
+      "error": "Gemini did not return valid JSON",
       "raw": output_text
     }), 500
 

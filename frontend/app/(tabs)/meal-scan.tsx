@@ -12,7 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import TopNav from '../../src/components/TopNav';
 import InteractivePressable from '../../src/components/InteractivePressable';
-import API, { API_BASE_URL } from '../../src/api/config';
+import { API_BASE_URL } from '../../src/api/config';
 import { appendNutritionEntry } from '../../src/storage/nutrition';
 import { commonStyles } from '../../src/styles/common';
 import { mealScanScreenStyles as styles } from '../../src/styles/screens/tabs';
@@ -93,34 +93,51 @@ export default function MealScanScreen() {
         } as any);
       }
 
-      const response = await API.post('/ai/estimate-meal', formData, {
-        timeout: 90000,
+      const response = await fetch(`${API_BASE_URL}/ai/estimate-meal`, {
+        method: 'POST',
+        body: formData,
       });
 
-      setResult(response.data);
+      const rawBody = await response.text();
+      let parsedBody: MealResult | { error?: string; details?: string } | null = null;
+
+      try {
+        parsedBody = rawBody ? JSON.parse(rawBody) : null;
+      } catch {
+        parsedBody = null;
+      }
+
+      if (!response.ok) {
+        const backendError =
+          (parsedBody && 'error' in parsedBody ? parsedBody.error : null) || 'Analiza a esuat.';
+        const backendDetails =
+          (parsedBody && 'details' in parsedBody ? parsedBody.details : null) || rawBody || null;
+
+        throw new Error(
+          backendDetails ? `${backendError}: ${backendDetails}` : backendError,
+        );
+      }
+
+      if (!parsedBody || !('detected_foods' in parsedBody)) {
+        throw new Error('Backend-ul nu a intors un raspuns JSON valid.');
+      }
+
+      setResult(parsedBody);
       setStatusMessage('Analysis complete.');
     } catch (error: any) {
-      const backendError = error?.response?.data?.error;
-      const backendDetails = error?.response?.data?.details;
-      const isNetworkError = error?.message?.includes('Network Error');
+      const rawMessage = error?.message || '';
+      const isNetworkError =
+        rawMessage.includes('Network Error') || rawMessage.includes('Network request failed');
       const backendHealthy = isNetworkError ? await checkBackendHealth() : false;
 
       const message =
-        (backendError && backendDetails
-          ? `${backendError}: ${backendDetails}`
-          : null) ||
-        backendDetails ||
-        backendError ||
         (isNetworkError && backendHealthy
-          ? 'Backend-ul raspunde, dar analiza a esuat inainte sa intoarca un raspuns valid. Verifica logul Flask pentru detalii OpenAI.'
-          : null) ||
-        (error?.code === 'ECONNABORTED'
-          ? 'Analiza a durat prea mult. Incearca din nou.'
+          ? 'Backend-ul raspunde, dar upload-ul imaginii a esuat inainte sa primeasca un raspuns valid. Verifica logul Flask si conexiunea dintre telefon si server.'
           : null) ||
         (isNetworkError
           ? `Nu ma pot conecta la backend. Verifica serverul si API URL: ${API_BASE_URL}`
           : null) ||
-        error?.message ||
+        rawMessage ||
         'Nu s-a putut analiza imaginea.';
 
       setErrorMessage(message);

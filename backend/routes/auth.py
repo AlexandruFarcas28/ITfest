@@ -1,7 +1,12 @@
 from flask import Blueprint, jsonify, request
-from werkzeug.security import generate_password_hash, check_password_hash
-from db import mongo
-from auth_utils import generate_token
+from werkzeug.security import check_password_hash, generate_password_hash
+
+try:
+    from ..auth_utils import generate_token
+    from ..db import mongo
+except ImportError:
+    from auth_utils import generate_token
+    from db import mongo
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
