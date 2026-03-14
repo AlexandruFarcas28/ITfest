@@ -28,7 +28,7 @@ export default function Index() {
         }
       } catch (err) {
         console.log('checkLogin error:', err);
-        await AsyncStorage.multiRemove(['token', 'user']);
+        await Promise.all([AsyncStorage.removeItem('token'), AsyncStorage.removeItem('user')]);
       } finally {
         setLoading(false);
       }

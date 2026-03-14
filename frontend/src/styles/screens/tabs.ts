@@ -491,3 +491,46 @@ export const leaderboardScreenStyles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export const mealScanScreenStyles = StyleSheet.create({
+  space: {
+    marginBottom: 16,
+  },
+  preview: {
+    width: '100%',
+    height: 260,
+    borderRadius: 16,
+    resizeMode: 'cover',
+  },
+  resultTitle: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontWeight: '900',
+    marginBottom: 12,
+  },
+  line: {
+    color: COLORS.text,
+    fontSize: 15,
+    marginBottom: 8,
+  },
+  notes: {
+    color: COLORS.subtitle,
+    fontSize: 14,
+    lineHeight: 21,
+    marginTop: 8,
+  },
+  resultButton: {
+    marginTop: 18,
+  },
+  statusText: {
+    color: COLORS.subtitle,
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: COLORS.accent,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+});

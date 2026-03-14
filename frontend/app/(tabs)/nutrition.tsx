@@ -1,34 +1,73 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import TopNav from '../../src/components/TopNav';
 import InteractivePressable from '../../src/components/InteractivePressable';
 import TrendChart from '../../src/components/TrendChart';
+import {
+  appendNutritionEntry,
+  getStoredNutritionEntries,
+  type NutritionEntry,
+} from '../../src/storage/nutrition';
 import { commonStyles } from '../../src/styles/common';
 import { COLORS } from '../../src/styles/theme';
 import { nutritionScreenStyles as styles } from '../../src/styles/screens/tabs';
 
-type Food = {
-  name: string;
-  calories: number;
-};
-
 export default function NutritionScreen() {
   const [foodName, setFoodName] = useState('');
-  const [foods, setFoods] = useState<Food[]>([
-    { name: 'Chicken breast', calories: 220 },
-    { name: 'Rice bowl', calories: 180 },
-    { name: 'Eggs', calories: 140 },
-  ]);
+  const [foods, setFoods] = useState<NutritionEntry[]>([]);
 
-  const addFood = () => {
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadEntries = async () => {
+        const storedEntries = await getStoredNutritionEntries();
+
+        if (!isActive) return;
+        setFoods(storedEntries);
+      };
+
+      loadEntries();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+  const addFood = async () => {
     if (!foodName.trim()) return;
-    setFoods((current) => [...current, { name: foodName.trim(), calories: 100 }]);
+
+    const createdEntry = await appendNutritionEntry({
+      name: foodName.trim(),
+      calories: 100,
+      protein: 0,
+      carbs: 0,
+      fats: 0,
+      source: 'manual',
+      note: 'manual entry',
+    });
+
+    setFoods((current) => [...current, createdEntry]);
     setFoodName('');
   };
 
   const total = useMemo(
     () => foods.reduce((sum, food) => sum + food.calories, 0),
+    [foods]
+  );
+  const totalProtein = useMemo(
+    () => foods.reduce((sum, food) => sum + food.protein, 0),
+    [foods]
+  );
+  const totalCarbs = useMemo(
+    () => foods.reduce((sum, food) => sum + food.carbs, 0),
+    [foods]
+  );
+  const totalFats = useMemo(
+    () => foods.reduce((sum, food) => sum + food.fats, 0),
     [foods]
   );
 
@@ -57,15 +96,19 @@ export default function NutritionScreen() {
       >
         <Text style={styles.summaryKicker}>DAILY INTAKE</Text>
         <Text style={styles.summaryValue}>{total} kcal</Text>
-        <Text style={styles.summaryCopy}>Protein 120g / Carbs 180g / Fats 55g</Text>
+        <Text style={styles.summaryCopy}>
+          Protein {Math.round(totalProtein)}g / Carbs {Math.round(totalCarbs)}g / Fats {Math.round(totalFats)}g
+        </Text>
 
         <View style={styles.macroRow}>
           <View style={styles.macroChip}>
-            <Text style={styles.macroChipValue}>72%</Text>
+            <Text style={styles.macroChipValue}>
+              {Math.min(Math.round((total / 2000) * 100), 999)}%
+            </Text>
             <Text style={styles.macroChipLabel}>goal reached</Text>
           </View>
           <View style={styles.macroChip}>
-            <Text style={styles.macroChipValue}>3</Text>
+            <Text style={styles.macroChipValue}>{foods.length}</Text>
             <Text style={styles.macroChipLabel}>meals logged</Text>
           </View>
         </View>
@@ -108,7 +151,7 @@ export default function NutritionScreen() {
         <View key={`${food.name}-${index}`} style={styles.foodCard}>
           <View>
             <Text style={styles.foodName}>{food.name}</Text>
-            <Text style={styles.foodHint}>manual entry</Text>
+            <Text style={styles.foodHint}>{food.note || `${food.source} entry`}</Text>
           </View>
           <View style={styles.caloriePill}>
             <Text style={styles.calorieText}>{food.calories} kcal</Text>

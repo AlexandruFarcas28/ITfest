@@ -19,6 +19,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="metrics" />
         <Tabs.Screen name="plans" />
         <Tabs.Screen name="leaderboard" />
+        <Tabs.Screen name="meal-scan" />
         <Tabs.Screen name="profile" />
       </Tabs>
     </SafeAreaView>
