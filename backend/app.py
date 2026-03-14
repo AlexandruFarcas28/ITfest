@@ -1,49 +1,32 @@
+from flask import Flask
+from flask_cors import CORS
+from dotenv import load_dotenv
 import os
 
-from dotenv import load_dotenv
-from flask import Flask
+# ─── Incarca .env inainte de orice ────────────────────────────────────────────
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
-try:
-  from .routes.meal_ai import meal_ai_bp
-except ImportError:
-  from routes.meal_ai import meal_ai_bp
+from db import mongo
+from routes.auth import auth_bp
+from routes.profile import profile_bp
+from routes.nutrition import nutrition_bp
+from routes.water import water_bp
 
+app = Flask(__name__)
+CORS(app)
 
-def create_app():
-  load_dotenv()
+# ─── Config din .env ──────────────────────────────────────────────────────────
+app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+app.config["JWT_SECRET"] = os.getenv("JWT_SECRET", "fallback_secret")
 
-  app = Flask(__name__)
-  app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
+# ─── Init DB ──────────────────────────────────────────────────────────────────
+mongo.init_app(app)
 
-  @app.after_request
-  def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    return response
-
-  app.register_blueprint(meal_ai_bp, url_prefix="/api")
-
-  @app.get("/")
-  def index():
-    return {
-      "service": "meal-ai",
-      "status": "running",
-      "endpoints": [
-        "/health",
-        "/api/ai/estimate-meal",
-      ],
-    }
-
-  @app.get("/health")
-  def healthcheck():
-    return {"status": "ok", "service": "meal-ai"}
-
-  return app
-
-
-app = create_app()
-
+# ─── Blueprints ───────────────────────────────────────────────────────────────
+app.register_blueprint(auth_bp)
+app.register_blueprint(profile_bp)
+app.register_blueprint(nutrition_bp)
+app.register_blueprint(water_bp)
 
 if __name__ == "__main__":
-  app.run(host=os.getenv("FLASK_HOST", "0.0.0.0"), port=int(os.getenv("PORT", "5000")), debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
