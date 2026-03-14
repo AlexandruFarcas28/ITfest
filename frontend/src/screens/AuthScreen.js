@@ -145,117 +145,109 @@ export default function AuthScreen({ onLogin }) {
           <Text style={styles.subtitle}>Nutritie & Sport</Text>
         </View>
 
-        {!isLogin && (
+        <View style={styles.card}>
+          <Text style={styles.title}>{isLogin ? 'Buna revenire!' : 'Cont nou'}</Text>
+
+          {!isLogin && (
+            <TextInput
+              style={styles.input}
+              placeholder="Numele tau"
+              placeholderTextColor={COLORS.muted}
+              value={nume}
+              onChangeText={setNume}
+            />
+          )}
+
           <TextInput
             style={styles.input}
-            placeholder="Nume"
-            value={nume}
-            onChangeText={setNume}
-            placeholderTextColor="#999"
+            placeholder="Email"
+            placeholderTextColor={COLORS.muted}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
-        )}
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholderTextColor="#999"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Parolă"
-          value={parola}
-          onChangeText={setParola}
-          secureTextEntry
-          placeholderTextColor="#999"
-        />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Se încarcă...' : (isLogin ? 'Conectează-te' : 'Înregistrează-te')}</Text>
-        </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="Parola"
+            placeholderTextColor={COLORS.muted}
+            value={parola}
+            onChangeText={setParola}
+            secureTextEntry
+          />
 
-        <TouchableOpacity style={styles.switchButton} onPress={() => setIsLogin(!isLogin)}>
-          <Text style={styles.switchText}>
-            {isLogin ? 'Nu ai cont? Înregistrează-te' : 'Ai cont? Conectează-te'}
-          </Text>
-        </TouchableOpacity>
+          <InteractivePressable style={styles.button} onPress={handleSubmit} disabled={loading}>
+            <Text style={styles.buttonText}>
+              {loading ? 'Se incarca...' : isLogin ? 'Intra in cont' : 'Creeaza cont'}
+            </Text>
+          </InteractivePressable>
 
-        <TouchableOpacity style={styles.demoButton} onPress={handleDemoLogin}>
-          <Text style={styles.demoText}>Demo</Text>
-        </TouchableOpacity>
+          <InteractivePressable
+            style={styles.demoButton}
+            onPress={handleDemoLogin}
+          >
+            <Text style={styles.demoButtonText}>CONTINUE AS DEMO</Text>
+          </InteractivePressable>
+
+          <InteractivePressable onPress={() => setIsLogin(!isLogin)} scaleTo={0.99}>
+            <Text style={styles.switchText}>
+              {isLogin ? 'Nu ai cont? Inregistreaza-te' : 'Ai deja cont? Autentifica-te'}
+            </Text>
+          </InteractivePressable>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoImage: {
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-  },
-  logo: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-  },
-  input: {
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
+  header: { alignItems: 'center', marginBottom: 40 },
+  logoImage: { width: 120, height: 120, marginBottom: 12 },
+  logo: { fontSize: 48, fontWeight: 'bold', color: COLORS.text },
+  subtitle: { fontSize: 16, color: COLORS.muted, marginTop: 4 },
+  card: {
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.lg,
+    padding: 24,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.medium,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border
+  },
+  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text, marginBottom: 24 },
+  input: {
+    backgroundColor: COLORS.cardInner,
+    borderRadius: RADIUS.md,
+    padding: 16,
     color: COLORS.text,
+    fontSize: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border
   },
   button: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.medium,
-    padding: 15,
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
+    padding: 16,
     alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  switchButton: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  switchText: {
-    color: COLORS.primary,
-    fontSize: 14,
+    marginBottom: 16
   },
   demoButton: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    paddingVertical: 16,
     alignItems: 'center',
-    padding: 10,
+    marginBottom: 16,
   },
-  demoText: {
-    color: COLORS.textSecondary,
+  demoButtonText: {
+    color: COLORS.highlight,
     fontSize: 14,
-    textDecorationLine: 'underline',
+    fontWeight: '900',
+    letterSpacing: 1,
   },
+  buttonText: { color: COLORS.accentDark, fontSize: 16, fontWeight: 'bold' },
+  switchText: { color: COLORS.highlight, textAlign: 'center', fontSize: 14 }
 });
