@@ -36,6 +36,23 @@ export default function AuthScreen({ onLogin }) {
     }
   };
 
+  const handleDemoLogin = async () => {
+    try {
+      const fakeUser = {
+        id: 'demo-user',
+        nume: 'Demo User',
+        email: 'demo@fitapp.com',
+      };
+
+      await AsyncStorage.setItem('user', JSON.stringify(fakeUser));
+      await AsyncStorage.setItem('token', 'demo-token');
+
+      onLogin(fakeUser);
+    } catch (err) {
+      Alert.alert('Eroare', 'Nu s-a putut porni modul demo.');
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -87,6 +104,14 @@ export default function AuthScreen({ onLogin }) {
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.demoButton}
+            onPress={handleDemoLogin}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.demoButtonText}>CONTINUE AS DEMO</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
             <Text style={styles.switchText}>
               {isLogin ? 'Nu ai cont? Inregistreaza-te' : 'Ai deja cont? Autentifica-te'}
@@ -129,6 +154,22 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginBottom: 16
+  },
+  demoButton: {
+    backgroundColor: '#151515',
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  demoButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   buttonText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
   switchText: { color: '#00d4aa', textAlign: 'center', fontSize: 14 }
