@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput,
-  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image
+  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image, TouchableOpacity
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../api/config';
