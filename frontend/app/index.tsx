@@ -27,6 +27,7 @@ export default function Index() {
         }
       } catch (err) {
         console.log('checkLogin error:', err);
+        await AsyncStorage.multiRemove(['token', 'user']);
       } finally {
         setLoading(false);
       }

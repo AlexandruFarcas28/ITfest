@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import TopNav from '../../src/components/TopNav';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS } from '../../src/styles/theme';
 
 export default function ProfileScreen() {
   const [name, setName] = useState('');

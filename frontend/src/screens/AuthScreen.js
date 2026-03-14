@@ -6,6 +6,73 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../api/config';
 
+const LOCAL_USERS_KEY = 'fitapp_local_users';
+
+const normalizeEmail = (value) => value.trim().toLowerCase();
+
+const buildSession = (user) => ({
+  token: `local-token-${user.id}`,
+  user: {
+    id: user.id,
+    nume: user.nume,
+    email: user.email,
+  },
+});
+
+async function readLocalUsers() {
+  const stored = await AsyncStorage.getItem(LOCAL_USERS_KEY);
+
+  if (!stored) return [];
+
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeLocalUsers(users) {
+  await AsyncStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
+}
+
+async function loginLocally({ email, parola }) {
+  const users = await readLocalUsers();
+  const normalizedEmail = normalizeEmail(email);
+  const user = users.find((item) => item.email === normalizedEmail && item.parola === parola);
+
+  if (!user) {
+    throw new Error('Email sau parola invalida');
+  }
+
+  return buildSession(user);
+}
+
+async function registerLocally({ nume, email, parola }) {
+  const users = await readLocalUsers();
+  const normalizedEmail = normalizeEmail(email);
+
+  if (users.some((item) => item.email === normalizedEmail)) {
+    throw new Error('Exista deja un cont cu acest email');
+  }
+
+  const user = {
+    id: Date.now().toString(),
+    nume: nume.trim(),
+    email: normalizedEmail,
+    parola,
+  };
+
+  users.push(user);
+  await writeLocalUsers(users);
+
+  return buildSession(user);
+}
+
+function shouldFallbackToLocalAuth(error) {
+  return !error?.response;
+}
+
 export default function AuthScreen({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [nume, setNume] = useState('');
@@ -23,14 +90,24 @@ export default function AuthScreen({ onLogin }) {
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const body = isLogin
-        ? { email: email.trim().toLowerCase(), parola }
-        : { nume: nume.trim(), email: email.trim().toLowerCase(), parola };
-      const { data } = await API.post(endpoint, body);
+        ? { email: normalizeEmail(email), parola }
+        : { nume: nume.trim(), email: normalizeEmail(email), parola };
+
+      let data;
+
+      try {
+        const response = await API.post(endpoint, body);
+        data = response.data;
+      } catch (error) {
+        if (!shouldFallbackToLocalAuth(error)) throw error;
+        data = isLogin ? await loginLocally(body) : await registerLocally(body);
+      }
+
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
       onLogin(data.user);
-    } catch (err) {
-      Alert.alert('Eroare', err.response?.data?.mesaj || 'Ceva nu a mers');
+    } catch (error) {
+      Alert.alert('Eroare', error.response?.data?.mesaj || error.message || 'Ceva nu a mers');
     } finally {
       setLoading(false);
     }
@@ -48,7 +125,7 @@ export default function AuthScreen({ onLogin }) {
       await AsyncStorage.setItem('token', 'demo-token');
 
       onLogin(fakeUser);
-    } catch (err) {
+    } catch (_error) {
       Alert.alert('Eroare', 'Nu s-a putut porni modul demo.');
     }
   };
