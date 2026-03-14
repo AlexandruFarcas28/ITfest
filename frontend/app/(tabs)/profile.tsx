@@ -45,7 +45,7 @@ export default function ProfileScreen() {
             try {
               parsedUser = JSON.parse(savedUser) as StoredUser;
             } catch {
-              await AsyncStorage.multiRemove(['token', 'user']);
+              await Promise.all([AsyncStorage.removeItem('token'), AsyncStorage.removeItem('user')]);
             }
           }
 
@@ -94,7 +94,7 @@ export default function ProfileScreen() {
 
           await AsyncStorage.setItem('user', JSON.stringify(nextUser));
         } catch {
-          await AsyncStorage.multiRemove(['token', 'user']);
+          await Promise.all([AsyncStorage.removeItem('token'), AsyncStorage.removeItem('user')]);
         }
       }
 
@@ -111,7 +111,7 @@ export default function ProfileScreen() {
 
   const logout = async () => {
     await clearStoredProfile();
-    await AsyncStorage.multiRemove(['token', 'user']);
+    await Promise.all([AsyncStorage.removeItem('token'), AsyncStorage.removeItem('user')]);
     router.replace('/');
   };
 

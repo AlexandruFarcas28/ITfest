@@ -10,6 +10,7 @@ type AppRoute =
   | '/(tabs)/metrics'
   | '/(tabs)/plans'
   | '/(tabs)/leaderboard'
+  | '/(tabs)/meal-scan'
   | '/(tabs)/profile';
 
 const tabs: { label: string; path: AppRoute }[] = [
@@ -19,6 +20,7 @@ const tabs: { label: string; path: AppRoute }[] = [
   { label: 'Metrics', path: '/(tabs)/metrics' },
   { label: 'Plans', path: '/(tabs)/plans' },
   { label: 'Top', path: '/(tabs)/leaderboard' },
+  { label: 'Scan', path: '/(tabs)/meal-scan' },
   { label: 'Profile', path: '/(tabs)/profile' },
 ];
 
@@ -40,7 +42,7 @@ export default function TopNav() {
           return (
             <TouchableOpacity
               key={tab.path}
-              onPress={() => router.replace(tab.path)}
+              onPress={() => router.replace(tab.path as never)}
               style={[styles.tab, active && styles.tabActive]}
             >
               <Text style={[styles.tabText, active && styles.tabTextActive]}>

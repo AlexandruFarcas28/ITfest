@@ -1,10 +1,32 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-const DEFAULT_API_URL = 'http://192.168.170.138:5000/api';
+function resolveDefaultApiUrl() {
+  const explicitApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+
+  if (explicitApiUrl) {
+    return explicitApiUrl;
+  }
+
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname) {
+    return `http://${window.location.hostname}:5000/api`;
+  }
+
+  const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
+
+  if (expoHost) {
+    return `http://${expoHost}:5000/api`;
+  }
+
+  return 'http://127.0.0.1:5000/api';
+}
+
+export const API_BASE_URL = resolveDefaultApiUrl();
 
 const API = axios.create({
-  baseURL: (process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL).trim(),
+  baseURL: API_BASE_URL,
   timeout: 5000,
 });
 
