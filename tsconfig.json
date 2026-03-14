@@ -1,5 +1,5 @@
 {
-  "extends": "./frontend/node_modules/expo/tsconfig.base",
+  "extends": "./frontend/tsconfig.json",
   "compilerOptions": {},
   "files": []
 }
