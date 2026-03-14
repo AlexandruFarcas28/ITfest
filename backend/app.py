@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-app.config["MONGO_URI"] = "mongodb://localhost:27017/fitapp"
+app.config["MONGO_URI"] = "mongodb+srv://alexdragu2004_db_user:cpLMrueEbtmSWuX8@database.ourol0h.mongodb.net/fitapp?retryWrites=true&w=majority&appName=database"
 app.config["JWT_SECRET"] = "SCHIMBA_ASTA_CU_UN_SECRET_RANDOM"
 
 # ─── Init DB ──────────────────────────────────────────────────────────────────
