@@ -1,12 +1,56 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import TrendChart from '../../src/components/TrendChart';
+import { getStoredProfile, mergeStoredProfile } from '../../src/storage/profile';
 import { commonStyles } from '../../src/styles/common';
 import { COLORS, RADIUS } from '../../src/styles/theme';
 
 export default function MetricsScreen() {
   const [weight, setWeight] = useState('80');
   const [height, setHeight] = useState('180');
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [hasEdited, setHasEdited] = useState(false);
+  const numericWeight = parseFloat(weight) || 80;
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProfile = async () => {
+        const storedProfile = await getStoredProfile();
+
+        if (!isActive) return;
+
+        if (storedProfile?.weight) setWeight(storedProfile.weight);
+        if (storedProfile?.height) setHeight(storedProfile.height);
+        setProfileLoaded(true);
+      };
+
+      loadProfile();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    if (!profileLoaded || !hasEdited) return;
+
+    mergeStoredProfile({ weight, height });
+  }, [hasEdited, height, profileLoaded, weight]);
+
+  const handleWeightChange = (value: string) => {
+    setHasEdited(true);
+    setWeight(value);
+  };
+
+  const handleHeightChange = (value: string) => {
+    setHasEdited(true);
+    setHeight(value);
+  };
 
   const bmi = useMemo(() => {
     const parsedWeight = parseFloat(weight);
@@ -24,6 +68,26 @@ export default function MetricsScreen() {
     if (parsedBmi <= 25) return 'Recomp';
     return 'Cut';
   }, [bmi]);
+
+  const targetWeight = useMemo(() => {
+    if (goal === 'Cut') return 76;
+    if (goal === 'Bulk') return 84;
+    if (goal === 'Recomp') return 80;
+    return undefined;
+  }, [goal]);
+
+  const weightTrend = useMemo(
+    () => [
+      { label: 'W1', value: 83.4 },
+      { label: 'W2', value: 82.8 },
+      { label: 'W3', value: 82.2 },
+      { label: 'W4', value: 81.5 },
+      { label: 'W5', value: 81.1 },
+      { label: 'W6', value: 80.6 },
+      { label: 'Now', value: numericWeight },
+    ],
+    [numericWeight]
+  );
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
@@ -53,7 +117,7 @@ export default function MetricsScreen() {
           placeholder="Weight (kg)"
           placeholderTextColor={COLORS.muted}
           value={weight}
-          onChangeText={setWeight}
+          onChangeText={handleWeightChange}
           keyboardType="numeric"
         />
 
@@ -62,7 +126,7 @@ export default function MetricsScreen() {
           placeholder="Height (cm)"
           placeholderTextColor={COLORS.muted}
           value={height}
-          onChangeText={setHeight}
+          onChangeText={handleHeightChange}
           keyboardType="numeric"
         />
       </View>
@@ -78,6 +142,18 @@ export default function MetricsScreen() {
           <Text style={styles.resultValue}>{bmi === '-' ? 'Waiting' : 'Tracked'}</Text>
         </View>
       </View>
+
+      <TrendChart
+        title="Weight evolution"
+        subtitle="This chart is ready for historical weigh-ins once the database stores body measurements."
+        data={weightTrend}
+        accentColor={COLORS.highlight}
+        chartHeight={76}
+        scaleMode="fit"
+        target={targetWeight}
+        targetLabel={targetWeight ? 'Goal weight' : undefined}
+        valueFormatter={(value) => `${value.toFixed(1)} kg`}
+      />
     </ScrollView>
   );
 }

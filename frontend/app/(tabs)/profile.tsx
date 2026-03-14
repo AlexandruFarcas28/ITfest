@@ -1,11 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import InteractivePressable from '../../src/components/InteractivePressable';
+import {
+  clearStoredProfile,
+  getStoredProfile,
+  saveStoredProfile,
+  type StoredProfile,
+} from '../../src/storage/profile';
 import { commonStyles } from '../../src/styles/common';
 import { COLORS, RADIUS } from '../../src/styles/theme';
 
 type StoredUser = {
+  id?: string;
   nume?: string;
   email?: string;
 };
@@ -17,25 +26,89 @@ export default function ProfileScreen() {
   const [age, setAge] = useState('');
   const [email, setEmail] = useState('');
 
-  useEffect(() => {
-    const loadUser = async () => {
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProfile = async () => {
+        try {
+          const [storedProfile, savedUser] = await Promise.all([
+            getStoredProfile(),
+            AsyncStorage.getItem('user'),
+          ]);
+
+          let parsedUser: StoredUser | null = null;
+
+          if (savedUser) {
+            try {
+              parsedUser = JSON.parse(savedUser) as StoredUser;
+            } catch {
+              await AsyncStorage.multiRemove(['token', 'user']);
+            }
+          }
+
+          if (!isActive) return;
+
+          setName(storedProfile?.name ?? parsedUser?.nume ?? '');
+          setEmail(storedProfile?.email ?? parsedUser?.email ?? '');
+          setWeight(storedProfile?.weight ?? '');
+          setHeight(storedProfile?.height ?? '');
+          setAge(storedProfile?.age ?? '');
+        } catch {
+          if (isActive) {
+            Alert.alert('Eroare', 'Nu s-a putut incarca profilul.');
+          }
+        }
+      };
+
+      loadProfile();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+  const saveProfile = async () => {
+    try {
+      const nextProfile: StoredProfile = {
+        name,
+        email,
+        weight,
+        height,
+        age,
+      };
+      const normalizedProfile = await saveStoredProfile(nextProfile);
       const savedUser = await AsyncStorage.getItem('user');
 
-      if (!savedUser) return;
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser) as StoredUser;
+          const nextUser = {
+            ...parsedUser,
+            nume: normalizedProfile.name ?? parsedUser.nume ?? '',
+            email: normalizedProfile.email ?? parsedUser.email ?? '',
+          };
 
-      try {
-        const parsedUser = JSON.parse(savedUser) as StoredUser;
-        setName(parsedUser.nume ?? '');
-        setEmail(parsedUser.email ?? '');
-      } catch {
-        await AsyncStorage.removeItem('user');
+          await AsyncStorage.setItem('user', JSON.stringify(nextUser));
+        } catch {
+          await AsyncStorage.multiRemove(['token', 'user']);
+        }
       }
-    };
 
-    loadUser();
-  }, []);
+      setName(normalizedProfile.name ?? '');
+      setEmail(normalizedProfile.email ?? '');
+      setWeight(normalizedProfile.weight ?? '');
+      setHeight(normalizedProfile.height ?? '');
+      setAge(normalizedProfile.age ?? '');
+      Alert.alert('Salvat', 'Profilul a fost actualizat local.');
+    } catch {
+      Alert.alert('Eroare', 'Nu s-a putut salva profilul.');
+    }
+  };
 
   const logout = async () => {
+    await clearStoredProfile();
     await AsyncStorage.multiRemove(['token', 'user']);
     router.replace('/');
   };
@@ -95,16 +168,16 @@ export default function ProfileScreen() {
         />
       </View>
 
-      <TouchableOpacity
+      <InteractivePressable
         style={[commonStyles.primaryButton, styles.primarySpacing]}
-        onPress={() => Alert.alert('Saved', 'Profile saved locally for demo.')}
+        onPress={saveProfile}
       >
         <Text style={commonStyles.primaryButtonText}>Save changes</Text>
-      </TouchableOpacity>
+      </InteractivePressable>
 
-      <TouchableOpacity style={commonStyles.secondaryButton} onPress={logout}>
+      <InteractivePressable style={commonStyles.secondaryButton} onPress={logout}>
         <Text style={commonStyles.secondaryButtonText}>Logout</Text>
-      </TouchableOpacity>
+      </InteractivePressable>
     </ScrollView>
   );
 }

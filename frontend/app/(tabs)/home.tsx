@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import TrendChart, { type TrendDatum } from '../../src/components/TrendChart';
 import { commonStyles } from '../../src/styles/common';
 import { COLORS, RADIUS } from '../../src/styles/theme';
 
@@ -40,6 +41,16 @@ function HabitRow({ title, detail, value }: HabitRowProps) {
     </View>
   );
 }
+
+const weeklyMomentum: TrendDatum[] = [
+  { label: 'Mon', value: 62 },
+  { label: 'Tue', value: 74 },
+  { label: 'Wed', value: 71 },
+  { label: 'Thu', value: 80 },
+  { label: 'Fri', value: 76 },
+  { label: 'Sat', value: 88 },
+  { label: 'Sun', value: 84 },
+];
 
 export default function HomeScreen() {
   return (
@@ -82,6 +93,16 @@ export default function HomeScreen() {
         <StatCard label="Hydration" value="1.5 L" hint="One refill left" />
         <StatCard label="Workout" value="42 min" hint="Push session complete" />
       </View>
+
+      <TrendChart
+        title="Weekly momentum"
+        subtitle="Prepared for daily activity history once the database stores workouts, steps and recovery."
+        data={weeklyMomentum}
+        accentColor={COLORS.highlight}
+        target={80}
+        targetLabel="Target score"
+        valueFormatter={(value) => `${Math.round(value)}%`}
+      />
 
       <View style={commonStyles.sectionRow}>
         <Text style={commonStyles.sectionTitle}>Today flow</Text>

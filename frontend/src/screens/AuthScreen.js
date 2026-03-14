@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput,
   StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../api/config';
+import InteractivePressable from '../components/InteractivePressable';
 import { COLORS, RADIUS } from '../styles/theme';
 
 const LOCAL_USERS_KEY = 'fitapp_local_users';
@@ -176,25 +177,24 @@ export default function AuthScreen({ onLogin }) {
             secureTextEntry
           />
 
-          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+          <InteractivePressable style={styles.button} onPress={handleSubmit} disabled={loading}>
             <Text style={styles.buttonText}>
               {loading ? 'Se incarca...' : isLogin ? 'Intra in cont' : 'Creeaza cont'}
             </Text>
-          </TouchableOpacity>
+          </InteractivePressable>
 
-          <TouchableOpacity
+          <InteractivePressable
             style={styles.demoButton}
             onPress={handleDemoLogin}
-            activeOpacity={0.85}
           >
             <Text style={styles.demoButtonText}>CONTINUE AS DEMO</Text>
-          </TouchableOpacity>
+          </InteractivePressable>
 
-          <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+          <InteractivePressable onPress={() => setIsLogin(!isLogin)} scaleTo={0.99}>
             <Text style={styles.switchText}>
               {isLogin ? 'Nu ai cont? Inregistreaza-te' : 'Ai deja cont? Autentifica-te'}
             </Text>
-          </TouchableOpacity>
+          </InteractivePressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

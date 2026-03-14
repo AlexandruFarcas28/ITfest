@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import InteractivePressable from '../../src/components/InteractivePressable';
+import TrendChart from '../../src/components/TrendChart';
 import { commonStyles } from '../../src/styles/common';
 import { COLORS, RADIUS } from '../../src/styles/theme';
 
@@ -28,6 +30,19 @@ export default function NutritionScreen() {
     [foods]
   );
 
+  const calorieTrend = useMemo(
+    () => [
+      { label: 'Mon', value: 1680 },
+      { label: 'Tue', value: 1740 },
+      { label: 'Wed', value: 1810 },
+      { label: 'Thu', value: 1650 },
+      { label: 'Fri', value: 1900 },
+      { label: 'Sat', value: 1760 },
+      { label: 'Now', value: total },
+    ],
+    [total]
+  );
+
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <LinearGradient
@@ -52,6 +67,16 @@ export default function NutritionScreen() {
         </View>
       </LinearGradient>
 
+      <TrendChart
+        title="Calorie trend"
+        subtitle="This section is ready for meal history once your backend saves daily nutrition entries."
+        data={calorieTrend}
+        accentColor={COLORS.accent}
+        target={2000}
+        targetLabel="Daily target"
+        valueFormatter={(value) => `${Math.round(value)} kcal`}
+      />
+
       <View style={commonStyles.sectionRow}>
         <Text style={commonStyles.sectionTitle}>Quick add</Text>
         <Text style={commonStyles.sectionMeta}>Keep it lightweight</Text>
@@ -65,9 +90,9 @@ export default function NutritionScreen() {
           value={foodName}
           onChangeText={setFoodName}
         />
-        <TouchableOpacity style={commonStyles.primaryButton} onPress={addFood}>
+        <InteractivePressable style={commonStyles.primaryButton} onPress={addFood}>
           <Text style={commonStyles.primaryButtonText}>Add to log</Text>
-        </TouchableOpacity>
+        </InteractivePressable>
       </View>
 
       <View style={commonStyles.sectionRow}>

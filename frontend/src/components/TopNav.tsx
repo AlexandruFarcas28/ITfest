@@ -1,8 +1,9 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import InteractivePressable from './InteractivePressable';
 import { COLORS, RADIUS } from '../styles/theme';
 
 type AppRoute =
@@ -44,11 +45,11 @@ export default function TopNav() {
           const active = pathname === tab.path;
 
           return (
-            <TouchableOpacity
+            <InteractivePressable
               key={tab.path}
-              activeOpacity={0.85}
               onPress={() => router.replace(tab.path)}
               style={[styles.navButton, active && styles.navButtonActive]}
+              scaleTo={0.95}
             >
               <View style={[styles.navIconWrap, active && styles.navIconWrapActive]}>
                 <Ionicons
@@ -63,7 +64,7 @@ export default function TopNav() {
               >
                 {tab.label}
               </Text>
-            </TouchableOpacity>
+            </InteractivePressable>
           );
         })}
         </View>

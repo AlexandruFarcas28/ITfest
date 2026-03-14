@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Easing, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import InteractivePressable from '../../src/components/InteractivePressable';
+import TrendChart from '../../src/components/TrendChart';
 import { commonStyles } from '../../src/styles/common';
 import { COLORS, RADIUS } from '../../src/styles/theme';
 
@@ -9,6 +11,33 @@ export default function WaterScreen() {
   const goal = 2500;
 
   const progress = useMemo(() => Math.min((water / goal) * 100, 100), [water]);
+  const progressWidth = useRef(new Animated.Value(progress)).current;
+  const hydrationTrend = useMemo(
+    () => [
+      { label: 'Mon', value: 1800 },
+      { label: 'Tue', value: 2100 },
+      { label: 'Wed', value: 1950 },
+      { label: 'Thu', value: 2300 },
+      { label: 'Fri', value: 2050 },
+      { label: 'Sat', value: 2400 },
+      { label: 'Now', value: water },
+    ],
+    [water]
+  );
+
+  useEffect(() => {
+    Animated.timing(progressWidth, {
+      toValue: progress,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressWidth]);
+
+  const animatedProgressWidth = progressWidth.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+  });
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
@@ -23,7 +52,7 @@ export default function WaterScreen() {
         <Text style={styles.heroLabel}>Goal: {goal} ml today</Text>
 
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          <Animated.View style={[styles.progressFill, { width: animatedProgressWidth }]} />
         </View>
 
         <View style={styles.heroFooter}>
@@ -40,25 +69,35 @@ export default function WaterScreen() {
       </View>
 
       <View style={styles.actionGrid}>
-        <TouchableOpacity style={styles.actionCard} onPress={() => setWater((value) => value + 250)}>
+        <InteractivePressable style={styles.actionCard} onPress={() => setWater((value) => value + 250)}>
           <Text style={styles.actionValue}>+250</Text>
           <Text style={styles.actionLabel}>small bottle</Text>
-        </TouchableOpacity>
+        </InteractivePressable>
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => setWater((value) => value + 500)}>
+        <InteractivePressable style={styles.actionCard} onPress={() => setWater((value) => value + 500)}>
           <Text style={styles.actionValue}>+500</Text>
           <Text style={styles.actionLabel}>large bottle</Text>
-        </TouchableOpacity>
+        </InteractivePressable>
       </View>
+
+      <TrendChart
+        title="Hydration history"
+        subtitle="Ready for database-backed daily hydration entries as soon as you persist water logs."
+        data={hydrationTrend}
+        accentColor={COLORS.highlight}
+        target={goal}
+        targetLabel="Daily goal"
+        valueFormatter={(value) => `${Math.round(value)} ml`}
+      />
 
       <View style={commonStyles.card}>
         <Text style={styles.tipTitle}>Hydration note</Text>
         <Text style={styles.tipText}>
           Spread your intake across the full day to keep energy and focus more stable.
         </Text>
-        <TouchableOpacity style={[commonStyles.secondaryButton, styles.resetButton]} onPress={() => setWater(0)}>
+        <InteractivePressable style={[commonStyles.secondaryButton, styles.resetButton]} onPress={() => setWater(0)}>
           <Text style={commonStyles.secondaryButtonText}>Reset tracker</Text>
-        </TouchableOpacity>
+        </InteractivePressable>
       </View>
     </ScrollView>
   );
