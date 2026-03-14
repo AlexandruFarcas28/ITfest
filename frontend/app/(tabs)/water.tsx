@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import TopNav from '../../src/components/TopNav';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS } from '../../src/styles/theme';
+import { COLORS, RADIUS } from '../../src/styles/theme';
 
 export default function WaterScreen() {
   const [water, setWater] = useState(1500);
@@ -12,36 +12,52 @@ export default function WaterScreen() {
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
-      <TopNav />
-
-      <Text style={commonStyles.kicker}>HYDRATION</Text>
-      <Text style={commonStyles.title}>Water tracker</Text>
-      <Text style={commonStyles.subtitle}>
-        Stay consistent with your daily hydration target.
-      </Text>
-
-      <View style={commonStyles.card}>
+      <LinearGradient
+        colors={['#0D4B50', '#19A7A0']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.heroCard}
+      >
+        <Text style={styles.heroKicker}>WATER STATUS</Text>
         <Text style={styles.heroValue}>{water} ml</Text>
-        <Text style={styles.heroLabel}>Goal: {goal} ml</Text>
+        <Text style={styles.heroLabel}>Goal: {goal} ml today</Text>
 
-        <View style={styles.progressBar}>
+        <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${progress}%` }]} />
         </View>
 
-        <Text style={styles.progressText}>{Math.round(progress)}% completed</Text>
+        <View style={styles.heroFooter}>
+          <Text style={styles.heroFooterText}>{Math.round(progress)}% complete</Text>
+          <Text style={styles.heroFooterText}>
+            {goal - water > 0 ? `${goal - water} ml left` : 'Goal hit'}
+          </Text>
+        </View>
+      </LinearGradient>
+
+      <View style={commonStyles.sectionRow}>
+        <Text style={commonStyles.sectionTitle}>Quick actions</Text>
+        <Text style={commonStyles.sectionMeta}>One tap updates</Text>
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity style={commonStyles.secondaryButton} onPress={() => setWater(water + 250)}>
-          <Text style={commonStyles.secondaryButtonText}>+250 ml</Text>
+      <View style={styles.actionGrid}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => setWater((value) => value + 250)}>
+          <Text style={styles.actionValue}>+250</Text>
+          <Text style={styles.actionLabel}>small bottle</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={commonStyles.secondaryButton} onPress={() => setWater(water + 500)}>
-          <Text style={commonStyles.secondaryButtonText}>+500 ml</Text>
+        <TouchableOpacity style={styles.actionCard} onPress={() => setWater((value) => value + 500)}>
+          <Text style={styles.actionValue}>+500</Text>
+          <Text style={styles.actionLabel}>large bottle</Text>
         </TouchableOpacity>
+      </View>
 
-        <TouchableOpacity style={[commonStyles.primaryButton, styles.resetButton]} onPress={() => setWater(0)}>
-          <Text style={commonStyles.primaryButtonText}>Reset</Text>
+      <View style={commonStyles.card}>
+        <Text style={styles.tipTitle}>Hydration note</Text>
+        <Text style={styles.tipText}>
+          Spread your intake across the full day to keep energy and focus more stable.
+        </Text>
+        <TouchableOpacity style={[commonStyles.secondaryButton, styles.resetButton]} onPress={() => setWater(0)}>
+          <Text style={commonStyles.secondaryButtonText}>Reset tracker</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -49,36 +65,86 @@ export default function WaterScreen() {
 }
 
 const styles = StyleSheet.create({
+  heroCard: {
+    borderRadius: RADIUS.xl,
+    padding: 22,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  heroKicker: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+    marginBottom: 10,
+  },
   heroValue: {
     color: COLORS.text,
-    fontSize: 34,
+    fontSize: 40,
     fontWeight: '900',
     marginBottom: 6,
   },
   heroLabel: {
     color: COLORS.subtitle,
-    fontSize: 14,
-    marginBottom: 16,
+    fontSize: 15,
+    marginBottom: 18,
   },
-  progressBar: {
+  progressTrack: {
     height: 18,
-    backgroundColor: COLORS.cardInner,
-    borderRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: RADIUS.pill,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 10,
+    marginBottom: 14,
   },
   progressFill: {
     height: '100%',
     backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.pill,
   },
-  progressText: {
-    color: COLORS.muted,
+  heroFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  heroFooterText: {
+    color: COLORS.subtitle,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  actionGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  actionCard: {
+    width: '48%',
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.lg,
+    padding: 20,
+  },
+  actionValue: {
+    color: COLORS.text,
+    fontSize: 28,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  actionLabel: {
+    color: COLORS.subtitle,
     fontSize: 13,
   },
-  actions: {
-    gap: 12,
+  tipTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  tipText: {
+    color: COLORS.subtitle,
+    fontSize: 14,
+    lineHeight: 21,
+    marginBottom: 18,
   },
   resetButton: {
     marginTop: 4,

@@ -1,20 +1,25 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import TopNav from '../../src/components/TopNav';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS } from '../../src/styles/theme';
+import { COLORS, RADIUS } from '../../src/styles/theme';
+
+type Food = {
+  name: string;
+  calories: number;
+};
 
 export default function NutritionScreen() {
   const [foodName, setFoodName] = useState('');
-  const [foods, setFoods] = useState([
+  const [foods, setFoods] = useState<Food[]>([
     { name: 'Chicken breast', calories: 220 },
-    { name: 'Rice', calories: 180 },
+    { name: 'Rice bowl', calories: 180 },
     { name: 'Eggs', calories: 140 },
   ]);
 
   const addFood = () => {
     if (!foodName.trim()) return;
-    setFoods([...foods, { name: foodName.trim(), calories: 100 }]);
+    setFoods((current) => [...current, { name: foodName.trim(), calories: 100 }]);
     setFoodName('');
   };
 
@@ -25,43 +30,59 @@ export default function NutritionScreen() {
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
-      <TopNav />
-
-      <Text style={commonStyles.kicker}>NUTRITION</Text>
-      <Text style={commonStyles.title}>Daily intake</Text>
-      <Text style={commonStyles.subtitle}>
-        Add foods quickly and keep an eye on your calorie target.
-      </Text>
-
-      <View style={commonStyles.card}>
+      <LinearGradient
+        colors={['#0D4B50', '#6F2107']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.summaryCard}
+      >
+        <Text style={styles.summaryKicker}>DAILY INTAKE</Text>
         <Text style={styles.summaryValue}>{total} kcal</Text>
-        <Text style={styles.summaryLabel}>today</Text>
-        <Text style={styles.summaryMacros}>Protein 120g • Carbs 180g • Fats 55g</Text>
+        <Text style={styles.summaryCopy}>Protein 120g / Carbs 180g / Fats 55g</Text>
+
+        <View style={styles.macroRow}>
+          <View style={styles.macroChip}>
+            <Text style={styles.macroChipValue}>72%</Text>
+            <Text style={styles.macroChipLabel}>goal reached</Text>
+          </View>
+          <View style={styles.macroChip}>
+            <Text style={styles.macroChipValue}>3</Text>
+            <Text style={styles.macroChipLabel}>meals logged</Text>
+          </View>
+        </View>
+      </LinearGradient>
+
+      <View style={commonStyles.sectionRow}>
+        <Text style={commonStyles.sectionTitle}>Quick add</Text>
+        <Text style={commonStyles.sectionMeta}>Keep it lightweight</Text>
       </View>
 
-      <Text style={commonStyles.sectionTitle}>Add food</Text>
-      <View style={styles.row}>
+      <View style={commonStyles.card}>
         <TextInput
-          style={[commonStyles.input, styles.rowInput]}
+          style={[commonStyles.input, styles.inputNoMargin]}
           placeholder="Enter food name"
-          placeholderTextColor="#777"
+          placeholderTextColor={COLORS.muted}
           value={foodName}
           onChangeText={setFoodName}
         />
-        <TouchableOpacity style={[commonStyles.primaryButton, styles.addButton]} onPress={addFood}>
-          <Text style={commonStyles.primaryButtonText}>Add</Text>
+        <TouchableOpacity style={commonStyles.primaryButton} onPress={addFood}>
+          <Text style={commonStyles.primaryButtonText}>Add to log</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={commonStyles.sectionTitle}>Food list</Text>
+      <View style={commonStyles.sectionRow}>
+        <Text style={commonStyles.sectionTitle}>Food list</Text>
+        <Text style={commonStyles.sectionMeta}>{foods.length} items</Text>
+      </View>
+
       {foods.map((food, index) => (
-        <View key={index} style={commonStyles.card}>
-          <View style={styles.foodRow}>
-            <View>
-              <Text style={styles.foodName}>{food.name}</Text>
-              <Text style={styles.foodHint}>manual entry</Text>
-            </View>
-            <Text style={styles.foodCalories}>{food.calories} kcal</Text>
+        <View key={`${food.name}-${index}`} style={styles.foodCard}>
+          <View>
+            <Text style={styles.foodName}>{food.name}</Text>
+            <Text style={styles.foodHint}>manual entry</Text>
+          </View>
+          <View style={styles.caloriePill}>
+            <Text style={styles.calorieText}>{food.calories} kcal</Text>
           </View>
         </View>
       ))}
@@ -70,55 +91,86 @@ export default function NutritionScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 10,
+  summaryCard: {
+    borderRadius: RADIUS.xl,
+    padding: 22,
     marginBottom: 24,
-    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  rowInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  addButton: {
-    minWidth: 82,
-    paddingHorizontal: 18,
-    justifyContent: 'center',
+  summaryKicker: {
+    color: COLORS.accent,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+    marginBottom: 10,
   },
   summaryValue: {
     color: COLORS.text,
-    fontSize: 28,
+    fontSize: 38,
     fontWeight: '900',
+    marginBottom: 6,
   },
-  summaryLabel: {
-    color: COLORS.muted,
-    fontSize: 14,
-    marginTop: 4,
-    marginBottom: 10,
-  },
-  summaryMacros: {
-    color: '#A0A0A0',
+  summaryCopy: {
+    color: COLORS.subtitle,
     fontSize: 14,
     lineHeight: 20,
+    marginBottom: 18,
   },
-  foodRow: {
+  macroRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  macroChip: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: RADIUS.md,
+    padding: 14,
+  },
+  macroChipValue: {
+    color: COLORS.text,
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  macroChipLabel: {
+    color: COLORS.muted,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  inputNoMargin: {
+    marginBottom: 14,
+  },
+  foodCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.lg,
+    padding: 18,
+    marginBottom: 14,
   },
   foodName: {
     color: COLORS.text,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   foodHint: {
     color: COLORS.muted,
     fontSize: 13,
   },
-  foodCalories: {
-    color: COLORS.text,
-    fontSize: 15,
-    fontWeight: '700',
+  caloriePill: {
+    backgroundColor: COLORS.accentSoft,
+    borderRadius: RADIUS.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  calorieText: {
+    color: COLORS.accent,
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

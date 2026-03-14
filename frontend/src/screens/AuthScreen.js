@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../api/config';
+import { COLORS, RADIUS } from '../styles/theme';
 
 const LOCAL_USERS_KEY = 'fitapp_local_users';
 
@@ -150,7 +151,7 @@ export default function AuthScreen({ onLogin }) {
             <TextInput
               style={styles.input}
               placeholder="Numele tau"
-              placeholderTextColor="#888"
+              placeholderTextColor={COLORS.muted}
               value={nume}
               onChangeText={setNume}
             />
@@ -159,7 +160,7 @@ export default function AuthScreen({ onLogin }) {
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor="#888"
+            placeholderTextColor={COLORS.muted}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -169,7 +170,7 @@ export default function AuthScreen({ onLogin }) {
           <TextInput
             style={styles.input}
             placeholder="Parola"
-            placeholderTextColor="#888"
+            placeholderTextColor={COLORS.muted}
             value={parola}
             onChangeText={setParola}
             secureTextEntry
@@ -201,53 +202,53 @@ export default function AuthScreen({ onLogin }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f0f0f' },
+  container: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   header: { alignItems: 'center', marginBottom: 40 },
   logoImage: { width: 120, height: 120, marginBottom: 12 },
-  logo: { fontSize: 48, fontWeight: 'bold', color: '#fff' },
-  subtitle: { fontSize: 16, color: '#888', marginTop: 4 },
+  logo: { fontSize: 48, fontWeight: 'bold', color: COLORS.text },
+  subtitle: { fontSize: 16, color: COLORS.muted, marginTop: 4 },
   card: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.lg,
     padding: 24,
     borderWidth: 1,
-    borderColor: '#2a2a2a'
+    borderColor: COLORS.border
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginBottom: 24 },
+  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text, marginBottom: 24 },
   input: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
+    backgroundColor: COLORS.cardInner,
+    borderRadius: RADIUS.md,
     padding: 16,
-    color: '#fff',
+    color: COLORS.text,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333'
+    borderColor: COLORS.border
   },
   button: {
-    backgroundColor: '#00d4aa',
-    borderRadius: 12,
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
     padding: 16,
     alignItems: 'center',
     marginBottom: 16
   },
   demoButton: {
-    backgroundColor: '#151515',
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
-    borderRadius: 16,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 16,
   },
 
   demoButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.highlight,
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  buttonText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
-  switchText: { color: '#00d4aa', textAlign: 'center', fontSize: 14 }
+  buttonText: { color: COLORS.accentDark, fontSize: 16, fontWeight: 'bold' },
+  switchText: { color: COLORS.highlight, textAlign: 'center', fontSize: 14 }
 });

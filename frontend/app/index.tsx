@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import AuthScreen from '../src/screens/AuthScreen';
+import { COLORS } from '../src/styles/theme';
 
 type User = {
   nume: string;
@@ -60,7 +61,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: COLORS.bg,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   loadingText: {
-    color: '#fff',
+    color: COLORS.text,
     fontSize: 32,
     fontWeight: 'bold',
   },
