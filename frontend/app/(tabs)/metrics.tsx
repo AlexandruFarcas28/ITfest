@@ -1,12 +1,58 @@
-import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ScrollView, Text, TextInput, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import TopNav from '../../src/components/TopNav';
+import TrendChart from '../../src/components/TrendChart';
+import { getStoredProfile, mergeStoredProfile } from '../../src/storage/profile';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS, RADIUS } from '../../src/styles/theme';
+import { COLORS } from '../../src/styles/theme';
+import { metricsScreenStyles as styles } from '../../src/styles/screens/tabs';
 
 export default function MetricsScreen() {
   const [weight, setWeight] = useState('80');
   const [height, setHeight] = useState('180');
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [hasEdited, setHasEdited] = useState(false);
+  const numericWeight = parseFloat(weight) || 80;
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProfile = async () => {
+        const storedProfile = await getStoredProfile();
+
+        if (!isActive) return;
+
+        if (storedProfile?.weight) setWeight(storedProfile.weight);
+        if (storedProfile?.height) setHeight(storedProfile.height);
+        setProfileLoaded(true);
+      };
+
+      loadProfile();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    if (!profileLoaded || !hasEdited) return;
+
+    mergeStoredProfile({ weight, height });
+  }, [hasEdited, height, profileLoaded, weight]);
+
+  const handleWeightChange = (value: string) => {
+    setHasEdited(true);
+    setWeight(value);
+  };
+
+  const handleHeightChange = (value: string) => {
+    setHasEdited(true);
+    setHeight(value);
+  };
 
   const bmi = useMemo(() => {
     const parsedWeight = parseFloat(weight);
@@ -25,8 +71,30 @@ export default function MetricsScreen() {
     return 'Cut';
   }, [bmi]);
 
+  const targetWeight = useMemo(() => {
+    if (goal === 'Cut') return 76;
+    if (goal === 'Bulk') return 84;
+    if (goal === 'Recomp') return 80;
+    return undefined;
+  }, [goal]);
+
+  const weightTrend = useMemo(
+    () => [
+      { label: 'W1', value: 83.4 },
+      { label: 'W2', value: 82.8 },
+      { label: 'W3', value: 82.2 },
+      { label: 'W4', value: 81.5 },
+      { label: 'W5', value: 81.1 },
+      { label: 'W6', value: 80.6 },
+      { label: 'Now', value: numericWeight },
+    ],
+    [numericWeight]
+  );
+
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
+
       <LinearGradient
         colors={['#6F2107', '#0D4B50']}
         start={{ x: 0, y: 0 }}
@@ -53,7 +121,7 @@ export default function MetricsScreen() {
           placeholder="Weight (kg)"
           placeholderTextColor={COLORS.muted}
           value={weight}
-          onChangeText={setWeight}
+          onChangeText={handleWeightChange}
           keyboardType="numeric"
         />
 
@@ -62,7 +130,7 @@ export default function MetricsScreen() {
           placeholder="Height (cm)"
           placeholderTextColor={COLORS.muted}
           value={height}
-          onChangeText={setHeight}
+          onChangeText={handleHeightChange}
           keyboardType="numeric"
         />
       </View>
@@ -78,74 +146,18 @@ export default function MetricsScreen() {
           <Text style={styles.resultValue}>{bmi === '-' ? 'Waiting' : 'Tracked'}</Text>
         </View>
       </View>
+
+      <TrendChart
+        title="Weight evolution"
+        subtitle="This chart is ready for historical weigh-ins once the database stores body measurements."
+        data={weightTrend}
+        accentColor={COLORS.highlight}
+        chartHeight={76}
+        scaleMode="fit"
+        target={targetWeight}
+        targetLabel={targetWeight ? 'Goal weight' : undefined}
+        valueFormatter={(value) => `${value.toFixed(1)} kg`}
+      />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  heroCard: {
-    borderRadius: RADIUS.xl,
-    padding: 22,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  heroKicker: {
-    color: COLORS.highlight,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.6,
-    marginBottom: 10,
-  },
-  heroValue: {
-    color: COLORS.text,
-    fontSize: 42,
-    fontWeight: '900',
-    marginBottom: 4,
-  },
-  heroLabel: {
-    color: COLORS.subtitle,
-    fontSize: 15,
-    marginBottom: 18,
-  },
-  goalPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.accentSoft,
-    borderRadius: RADIUS.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  goalPillText: {
-    color: COLORS.accent,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  inputSpacing: {
-    marginBottom: 14,
-  },
-  inputLast: {
-    marginBottom: 0,
-  },
-  resultGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  resultCard: {
-    width: '48%',
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-  },
-  resultLabel: {
-    color: COLORS.muted,
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  resultValue: {
-    color: COLORS.text,
-    fontSize: 23,
-    fontWeight: '900',
-  },
-});

@@ -1,8 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import TopNav from '../../src/components/TopNav';
+import InteractivePressable from '../../src/components/InteractivePressable';
+import TrendChart from '../../src/components/TrendChart';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS, RADIUS } from '../../src/styles/theme';
+import { COLORS } from '../../src/styles/theme';
+import { nutritionScreenStyles as styles } from '../../src/styles/screens/tabs';
 
 type Food = {
   name: string;
@@ -28,8 +32,23 @@ export default function NutritionScreen() {
     [foods]
   );
 
+  const calorieTrend = useMemo(
+    () => [
+      { label: 'Mon', value: 1680 },
+      { label: 'Tue', value: 1740 },
+      { label: 'Wed', value: 1810 },
+      { label: 'Thu', value: 1650 },
+      { label: 'Fri', value: 1900 },
+      { label: 'Sat', value: 1760 },
+      { label: 'Now', value: total },
+    ],
+    [total]
+  );
+
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
+
       <LinearGradient
         colors={['#0D4B50', '#6F2107']}
         start={{ x: 0, y: 0 }}
@@ -52,6 +71,16 @@ export default function NutritionScreen() {
         </View>
       </LinearGradient>
 
+      <TrendChart
+        title="Calorie trend"
+        subtitle="This section is ready for meal history once your backend saves daily nutrition entries."
+        data={calorieTrend}
+        accentColor={COLORS.accent}
+        target={2000}
+        targetLabel="Daily target"
+        valueFormatter={(value) => `${Math.round(value)} kcal`}
+      />
+
       <View style={commonStyles.sectionRow}>
         <Text style={commonStyles.sectionTitle}>Quick add</Text>
         <Text style={commonStyles.sectionMeta}>Keep it lightweight</Text>
@@ -65,9 +94,9 @@ export default function NutritionScreen() {
           value={foodName}
           onChangeText={setFoodName}
         />
-        <TouchableOpacity style={commonStyles.primaryButton} onPress={addFood}>
+        <InteractivePressable style={commonStyles.primaryButton} onPress={addFood}>
           <Text style={commonStyles.primaryButtonText}>Add to log</Text>
-        </TouchableOpacity>
+        </InteractivePressable>
       </View>
 
       <View style={commonStyles.sectionRow}>
@@ -89,88 +118,3 @@ export default function NutritionScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  summaryCard: {
-    borderRadius: RADIUS.xl,
-    padding: 22,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  summaryKicker: {
-    color: COLORS.accent,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.6,
-    marginBottom: 10,
-  },
-  summaryValue: {
-    color: COLORS.text,
-    fontSize: 38,
-    fontWeight: '900',
-    marginBottom: 6,
-  },
-  summaryCopy: {
-    color: COLORS.subtitle,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 18,
-  },
-  macroRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  macroChip: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: RADIUS.md,
-    padding: 14,
-  },
-  macroChipValue: {
-    color: COLORS.text,
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: 4,
-  },
-  macroChipLabel: {
-    color: COLORS.muted,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  inputNoMargin: {
-    marginBottom: 14,
-  },
-  foodCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-    marginBottom: 14,
-  },
-  foodName: {
-    color: COLORS.text,
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 5,
-  },
-  foodHint: {
-    color: COLORS.muted,
-    fontSize: 13,
-  },
-  caloriePill: {
-    backgroundColor: COLORS.accentSoft,
-    borderRadius: RADIUS.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  calorieText: {
-    color: COLORS.accent,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-});

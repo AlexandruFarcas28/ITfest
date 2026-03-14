@@ -1,9 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Text, View, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import TopNav from '../../src/components/TopNav';
+import TrendChart, { type TrendDatum } from '../../src/components/TrendChart';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS, RADIUS } from '../../src/styles/theme';
+import { COLORS } from '../../src/styles/theme';
+import { homeScreenStyles as styles } from '../../src/styles/screens/tabs';
 
 type StatCardProps = {
   label: string;
@@ -41,9 +44,21 @@ function HabitRow({ title, detail, value }: HabitRowProps) {
   );
 }
 
+const weeklyMomentum: TrendDatum[] = [
+  { label: 'Mon', value: 62 },
+  { label: 'Tue', value: 74 },
+  { label: 'Wed', value: 71 },
+  { label: 'Thu', value: 80 },
+  { label: 'Fri', value: 76 },
+  { label: 'Sat', value: 88 },
+  { label: 'Sun', value: 84 },
+];
+
 export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
+      <TopNav />
+
       <LinearGradient
         colors={['#19A7A0', '#FF6800']}
         start={{ x: 0, y: 0 }}
@@ -83,6 +98,16 @@ export default function HomeScreen() {
         <StatCard label="Workout" value="42 min" hint="Push session complete" />
       </View>
 
+      <TrendChart
+        title="Weekly momentum"
+        subtitle="Prepared for daily activity history once the database stores workouts, steps and recovery."
+        data={weeklyMomentum}
+        accentColor={COLORS.highlight}
+        target={80}
+        targetLabel="Target score"
+        valueFormatter={(value) => `${Math.round(value)}%`}
+      />
+
       <View style={commonStyles.sectionRow}>
         <Text style={commonStyles.sectionTitle}>Today flow</Text>
         <Text style={commonStyles.sectionMeta}>3 active goals</Text>
@@ -108,146 +133,3 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  heroCard: {
-    borderRadius: RADIUS.xl,
-    padding: 22,
-    marginBottom: 24,
-  },
-  heroEyebrow: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.7,
-    marginBottom: 10,
-  },
-  heroTitle: {
-    color: COLORS.white,
-    fontSize: 32,
-    lineHeight: 36,
-    fontWeight: '900',
-    marginBottom: 10,
-    maxWidth: 290,
-  },
-  heroSubtitle: {
-    color: 'rgba(255, 243, 232, 0.9)',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 24,
-    maxWidth: 290,
-  },
-  heroFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 18,
-  },
-  heroDivider: {
-    width: 1,
-    height: 36,
-    backgroundColor: 'rgba(255, 243, 232, 0.24)',
-  },
-  heroMetricValue: {
-    color: COLORS.white,
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: 2,
-  },
-  heroMetricLabel: {
-    color: 'rgba(255, 243, 232, 0.84)',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  statCard: {
-    width: '48%',
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-    marginBottom: 14,
-  },
-  statLabel: {
-    color: COLORS.muted,
-    fontSize: 13,
-    marginBottom: 10,
-    fontWeight: '700',
-  },
-  statValue: {
-    color: COLORS.text,
-    fontSize: 28,
-    fontWeight: '900',
-    marginBottom: 6,
-  },
-  statHint: {
-    color: COLORS.subtitle,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  habitRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  habitTitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  habitDetail: {
-    color: COLORS.subtitle,
-    fontSize: 13,
-    maxWidth: 220,
-  },
-  habitPill: {
-    backgroundColor: COLORS.accentSoft,
-    borderRadius: RADIUS.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  habitPillText: {
-    color: COLORS.accent,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  tipCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
-    backgroundColor: COLORS.highlight,
-    borderRadius: RADIUS.lg,
-    padding: 18,
-  },
-  tipIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(58, 19, 6, 0.14)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tipTextWrap: {
-    flex: 1,
-  },
-  tipTitle: {
-    color: COLORS.accentDark,
-    fontSize: 17,
-    fontWeight: '900',
-    marginBottom: 4,
-  },
-  tipText: {
-    color: '#163536',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-});

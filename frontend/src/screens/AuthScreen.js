@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput,
   StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../api/config';
+import InteractivePressable from '../components/InteractivePressable';
 import { COLORS, RADIUS } from '../styles/theme';
 
 const LOCAL_USERS_KEY = 'fitapp_local_users';
@@ -171,19 +172,26 @@ export default function AuthScreen({ onLogin }) {
           placeholderTextColor="#999"
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Se încarcă...' : (isLogin ? 'Conectează-te' : 'Înregistrează-te')}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+            <Text style={styles.buttonText}>
+              {loading ? 'Se incarca...' : isLogin ? 'Intra in cont' : 'Creeaza cont'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.switchButton} onPress={() => setIsLogin(!isLogin)}>
-          <Text style={styles.switchText}>
-            {isLogin ? 'Nu ai cont? Înregistrează-te' : 'Ai cont? Conectează-te'}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.demoButton}
+            onPress={handleDemoLogin}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.demoButtonText}>CONTINUE AS DEMO</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.demoButton} onPress={handleDemoLogin}>
-          <Text style={styles.demoText}>Demo</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+            <Text style={styles.switchText}>
+              {isLogin ? 'Nu ai cont? Inregistreaza-te' : 'Ai deja cont? Autentifica-te'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
