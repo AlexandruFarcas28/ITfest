@@ -129,7 +129,7 @@ export default function TrendChart({
         <View style={styles.barRow}>
           {safeData.map((point, index) => {
             return (
-              <View key={`${point.label}-${point.value}`} style={styles.barColumn}>
+              <View key={`${point.label}-${point.value}-${index}`} style={styles.barColumn}>
                 <View style={[styles.barTrack, { height: chartHeight }]}>
                   <Animated.View
                     style={[

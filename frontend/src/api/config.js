@@ -5,6 +5,20 @@ import { Platform } from 'react-native';
 
 import { invalidateSession, isJwtToken } from '../auth/session';
 
+function extractHost(candidate) {
+  if (!candidate || typeof candidate !== 'string') {
+    return null;
+  }
+
+  const sanitizedValue = candidate
+    .trim()
+    .replace(/^[a-z]+:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .replace(/:\d+$/, '');
+
+  return sanitizedValue || null;
+}
+
 function resolveDefaultApiUrl() {
   const explicitApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
 
@@ -16,10 +30,20 @@ function resolveDefaultApiUrl() {
     return `http://${window.location.hostname}:5000/api`;
   }
 
-  const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
+  const expoHost = extractHost(Constants.expoConfig?.hostUri);
+  const expoGoHost = extractHost(Constants.expoGoConfig?.debuggerHost);
+  const linkingHost = extractHost(Constants.linkingUri);
 
   if (expoHost) {
     return `http://${expoHost}:5000/api`;
+  }
+
+  if (expoGoHost) {
+    return `http://${expoGoHost}:5000/api`;
+  }
+
+  if (linkingHost) {
+    return `http://${linkingHost}:5000/api`;
   }
 
   return 'http://127.0.0.1:5000/api';

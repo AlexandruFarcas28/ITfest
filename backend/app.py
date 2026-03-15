@@ -132,9 +132,19 @@ def _build_mongo_uri_with_timeouts(raw_uri: str | None) -> str | None:
 app = create_app()
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+  value = os.getenv(name)
+  if value is None:
+    return default
+
+  return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 if __name__ == "__main__":
+  debug_mode = _env_flag("FLASK_DEBUG", default=False)
   app.run(
     host=os.getenv("FLASK_HOST", "0.0.0.0"),
     port=int(os.getenv("PORT", "5000")),
-    debug=True,
+    debug=debug_mode,
+    use_reloader=_env_flag("FLASK_USE_RELOADER", default=False),
   )
