@@ -6,6 +6,7 @@ import { COLORS, FONT, RADIUS, SPACING } from '../styles/theme';
 
 type AppRoute =
   | '/(tabs)/home'
+  | '/(tabs)/bmi'
   | '/(tabs)/nutrition'
   | '/(tabs)/water'
   | '/(tabs)/metrics'
@@ -16,6 +17,7 @@ type AppRoute =
 
 const tabs: { label: string; path: AppRoute }[] = [
   { label: 'Home', path: '/(tabs)/home' },
+  { label: 'BMI', path: '/(tabs)/bmi' },
   { label: 'Meals', path: '/(tabs)/nutrition' },
   { label: 'Water', path: '/(tabs)/water' },
   { label: 'Insights', path: '/(tabs)/metrics' },

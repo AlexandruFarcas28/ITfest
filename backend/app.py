@@ -42,6 +42,7 @@ def create_app():
       mongo.init_app(app)
       with app.app_context():
         mongo.cx.admin.command("ping")
+        mongo.db.bmi_history.create_index([("user_id", 1), ("recorded_at", -1)])
     except Exception as exc:
       app.config["DB_INIT_ERROR"] = str(exc)
   else:
@@ -89,6 +90,7 @@ def create_app():
         "/api/auth/login",
         "/api/auth/register",
         "/api/profile",
+        "/api/profile/bmi",
         "/api/nutrition",
         "/api/water",
         "/api/dashboard",

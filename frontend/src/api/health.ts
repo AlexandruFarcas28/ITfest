@@ -1,5 +1,6 @@
 import API from './config';
 import type {
+  BmiDashboardPayload,
   DashboardPayload,
   Gamification,
   MealHistoryResponse,
@@ -120,6 +121,11 @@ export async function fetchGamification() {
 
 export async function fetchProfile() {
   const response = await API.get<ProfilePayload>('/profile');
+  return response.data;
+}
+
+export async function fetchBmiDashboard() {
+  const response = await API.get<BmiDashboardPayload>('/profile/bmi');
   return response.data;
 }
 

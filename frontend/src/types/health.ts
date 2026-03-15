@@ -89,6 +89,71 @@ export type MacroTotals = {
   meals_logged: number;
 };
 
+export type BmiCategory = 'underweight' | 'normal' | 'overweight' | 'obesity' | 'unknown';
+
+export type BmiSummary = {
+  bmi: number | null;
+  category: BmiCategory;
+  category_label: string;
+  interpretation: string;
+  weight_kg: number | null;
+  height_cm: number | null;
+  healthy_weight_min_kg: number | null;
+  healthy_weight_max_kg: number | null;
+  healthy_weight_delta?: {
+    status: 'below' | 'above' | 'within';
+    difference_kg: number;
+    message: string;
+  } | null;
+  goal_alignment: string;
+  recorded_at?: string | null;
+  goal_label?: string | null;
+};
+
+export type BmiMeasurement = {
+  id: string;
+  recorded_at: string;
+  weight_kg: number | null;
+  height_cm: number | null;
+  bmi: number | null;
+  category: BmiCategory;
+  source: string;
+  bmi_change?: number | null;
+  weight_change?: number | null;
+};
+
+export type BmiDashboardPayload = {
+  current: BmiSummary;
+  profile_snapshot: {
+    weight_kg: number | null;
+    height_cm: number | null;
+    age: number | null;
+    goal_type: string;
+    goal_label: string;
+    activity_level: string;
+  };
+  trend: {
+    direction: 'up' | 'down' | 'stable';
+    bmi_change: number | null;
+    weight_change: number | null;
+    previous_bmi: number | null;
+    previous_weight_kg: number | null;
+    previous_recorded_at: string | null;
+  };
+  recommendation: {
+    title: string;
+    summary: string;
+    actions: string[];
+  };
+  interpretation: {
+    title: string;
+    body: string;
+    disclaimer: string;
+  };
+  limitations: string[];
+  history: BmiMeasurement[];
+};
+
 export type DashboardPayload = {
   date: string;
   goals: UserTargets;
@@ -207,6 +272,7 @@ export type ProfilePayload = {
   daily_fats_goal: number | null;
   water_goal_ml: number | null;
   resolved_targets: UserTargets;
+  bmi_summary?: BmiSummary;
 };
 
 export type MealMutationResponse = {

@@ -14,6 +14,7 @@ export default function TabsLayout() {
         }}
       >
         <Tabs.Screen name="home" />
+        <Tabs.Screen name="bmi" />
         <Tabs.Screen name="nutrition" />
         <Tabs.Screen name="water" />
         <Tabs.Screen name="metrics" />
