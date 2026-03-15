@@ -1,89 +1,36 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput,
-  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import API from '../api/config';
+import { clearSession, saveSession } from '../auth/session';
 import InteractivePressable from '../components/InteractivePressable';
 import { COLORS, RADIUS } from '../styles/theme';
-
-const LOCAL_USERS_KEY = 'fitapp_local_users';
-
 const normalizeEmail = (value) => value.trim().toLowerCase();
-
-const buildSession = (user) => ({
-  token: `local-token-${user.id}`,
-  user: {
-    id: user.id,
-    nume: user.nume,
-    email: user.email,
-  },
-});
-
-async function readLocalUsers() {
-  const stored = await AsyncStorage.getItem(LOCAL_USERS_KEY);
-
-  if (!stored) return [];
-
-  try {
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-async function writeLocalUsers(users) {
-  await AsyncStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
-}
-
-async function loginLocally({ email, parola }) {
-  const users = await readLocalUsers();
-  const normalizedEmail = normalizeEmail(email);
-  const user = users.find((item) => item.email === normalizedEmail && item.parola === parola);
-
-  if (!user) {
-    throw new Error('Email sau parola invalida');
-  }
-
-  return buildSession(user);
-}
-
-async function registerLocally({ nume, email, parola }) {
-  const users = await readLocalUsers();
-  const normalizedEmail = normalizeEmail(email);
-
-  if (users.some((item) => item.email === normalizedEmail)) {
-    throw new Error('Exista deja un cont cu acest email');
-  }
-
-  const user = {
-    id: Date.now().toString(),
-    nume: nume.trim(),
-    email: normalizedEmail,
-    parola,
-  };
-
-  users.push(user);
-  await writeLocalUsers(users);
-
-  return buildSession(user);
-}
-
-function shouldFallbackToLocalAuth(error) {
-  return !error?.response;
-}
 
 export default function AuthScreen({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [nume, setNume] = useState('');
   const [email, setEmail] = useState('');
-  const [parola, setParola] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const persistSession = async (session) => {
+    await saveSession(session);
+    onLogin(session.user);
+  };
+
   const handleSubmit = async () => {
-    if (!email.trim() || !parola.trim() || (!isLogin && !nume.trim())) {
+    if (!email.trim() || !password.trim() || (!isLogin && !nume.trim())) {
       return Alert.alert('Eroare', 'Completeaza toate campurile');
     }
 
@@ -92,48 +39,47 @@ export default function AuthScreen({ onLogin }) {
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const body = isLogin
-        ? { email: normalizeEmail(email), parola }
-        : { nume: nume.trim(), email: normalizeEmail(email), parola };
+        ? { email: normalizeEmail(email), password }
+        : { nume: nume.trim(), email: normalizeEmail(email), password };
 
-      let data;
+      let session;
 
-      try {
-        const response = await API.post(endpoint, body);
-        data = response.data;
-      } catch (error) {
-        if (!shouldFallbackToLocalAuth(error)) throw error;
-        data = isLogin ? await loginLocally(body) : await registerLocally(body);
-      }
+      const response = await API.post(endpoint, body);
+      session = response.data;
 
-      await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      onLogin(data.user);
+      await persistSession(session);
     } catch (error) {
-      Alert.alert('Eroare', error.response?.data?.mesaj || error.message || 'Ceva nu a mers');
+      Alert.alert(
+        'Eroare',
+        error.response?.data?.error || error.message || 'Ceva nu a mers',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleDemoLogin = async () => {
+    setLoading(true);
+
     try {
-      const fakeUser = {
-        id: 'demo-user',
-        nume: 'Demo User',
-        email: 'demo@fitapp.com',
-      };
-
-      await AsyncStorage.setItem('user', JSON.stringify(fakeUser));
-      await AsyncStorage.setItem('token', 'demo-token');
-
-      onLogin(fakeUser);
-    } catch (_error) {
-      Alert.alert('Eroare', 'Nu s-a putut porni modul demo.');
+      await clearSession();
+      const response = await API.post('/auth/demo');
+      await persistSession(response.data);
+    } catch (error) {
+      Alert.alert(
+        'Eroare',
+        error.response?.data?.error || error.message || 'Nu s-a putut porni modul demo. Verifica backend-ul.',
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Image
@@ -142,21 +88,21 @@ export default function AuthScreen({ onLogin }) {
             resizeMode="contain"
           />
           <Text style={styles.logo}>FitApp</Text>
-          <Text style={styles.subtitle}>Nutritie & Sport</Text>
+          <Text style={styles.subtitle}>AI meal coaching, smart logging, and habit momentum.</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.title}>{isLogin ? 'Buna revenire!' : 'Cont nou'}</Text>
+          <Text style={styles.title}>{isLogin ? 'Welcome back' : 'Create account'}</Text>
 
-          {!isLogin && (
+          {!isLogin ? (
             <TextInput
               style={styles.input}
-              placeholder="Numele tau"
+              placeholder="Your name"
               placeholderTextColor={COLORS.muted}
               value={nume}
               onChangeText={setNume}
             />
-          )}
+          ) : null}
 
           <TextInput
             style={styles.input}
@@ -170,29 +116,26 @@ export default function AuthScreen({ onLogin }) {
 
           <TextInput
             style={styles.input}
-            placeholder="Parola"
+            placeholder="Password"
             placeholderTextColor={COLORS.muted}
-            value={parola}
-            onChangeText={setParola}
+            value={password}
+            onChangeText={setPassword}
             secureTextEntry
           />
 
           <InteractivePressable style={styles.button} onPress={handleSubmit} disabled={loading}>
             <Text style={styles.buttonText}>
-              {loading ? 'Se incarca...' : isLogin ? 'Intra in cont' : 'Creeaza cont'}
+              {loading ? 'Loading...' : isLogin ? 'Sign in' : 'Create account'}
             </Text>
           </InteractivePressable>
 
-          <InteractivePressable
-            style={styles.demoButton}
-            onPress={handleDemoLogin}
-          >
-            <Text style={styles.demoButtonText}>CONTINUE AS DEMO</Text>
+          <InteractivePressable style={styles.demoButton} onPress={handleDemoLogin} disabled={loading}>
+            <Text style={styles.demoButtonText}>ENTER DEMO MODE</Text>
           </InteractivePressable>
 
-          <InteractivePressable onPress={() => setIsLogin(!isLogin)} scaleTo={0.99}>
+          <InteractivePressable onPress={() => setIsLogin((current) => !current)} scaleTo={0.99}>
             <Text style={styles.switchText}>
-              {isLogin ? 'Nu ai cont? Inregistreaza-te' : 'Ai deja cont? Autentifica-te'}
+              {isLogin ? 'Need an account? Create one' : 'Already have an account? Sign in'}
             </Text>
           </InteractivePressable>
         </View>
@@ -207,13 +150,20 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 40 },
   logoImage: { width: 120, height: 120, marginBottom: 12 },
   logo: { fontSize: 48, fontWeight: 'bold', color: COLORS.text },
-  subtitle: { fontSize: 16, color: COLORS.muted, marginTop: 4 },
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.muted,
+    marginTop: 4,
+    textAlign: 'center',
+    maxWidth: 320,
+    lineHeight: 22,
+  },
   card: {
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.lg,
     padding: 24,
     borderWidth: 1,
-    borderColor: COLORS.border
+    borderColor: COLORS.border,
   },
   title: { fontSize: 24, fontWeight: 'bold', color: COLORS.text, marginBottom: 24 },
   input: {
@@ -224,14 +174,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: COLORS.border
+    borderColor: COLORS.border,
   },
   button: {
     backgroundColor: COLORS.accent,
     borderRadius: RADIUS.md,
     padding: 16,
     alignItems: 'center',
-    marginBottom: 16
+    marginBottom: 16,
   },
   demoButton: {
     backgroundColor: COLORS.surface,
@@ -249,5 +199,5 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   buttonText: { color: COLORS.accentDark, fontSize: 16, fontWeight: 'bold' },
-  switchText: { color: COLORS.highlight, textAlign: 'center', fontSize: 14 }
+  switchText: { color: COLORS.highlight, textAlign: 'center', fontSize: 14 },
 });

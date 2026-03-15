@@ -1,95 +1,40 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+
 import ScreenHeader from '../../src/components/ScreenHeader';
+import StatePanel from '../../src/components/StatePanel';
 import TopNav from '../../src/components/TopNav';
 import TrendChart from '../../src/components/TrendChart';
-import { getStoredProfile, mergeStoredProfile } from '../../src/storage/profile';
+import { fetchWeeklyInsights } from '../../src/api/health';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS } from '../../src/styles/theme';
-import { metricsScreenStyles as styles } from '../../src/styles/screens/tabs';
+import { COLORS, RADIUS, SPACING } from '../../src/styles/theme';
+import type { WeeklyInsights } from '../../src/types/health';
 
 export default function MetricsScreen() {
-  const [weight, setWeight] = useState('80');
-  const [height, setHeight] = useState('180');
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  const [hasEdited, setHasEdited] = useState(false);
-  const numericWeight = parseFloat(weight) || 80;
+  const [insights, setInsights] = useState<WeeklyInsights | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadInsights = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const payload = await fetchWeeklyInsights();
+      setInsights(payload);
+    } catch (loadError: any) {
+      setError(loadError?.response?.data?.error || loadError?.message || 'Could not load weekly insights.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
-
-      const loadProfile = async () => {
-        const storedProfile = await getStoredProfile();
-
-        if (!isActive) return;
-
-        if (storedProfile?.weight) setWeight(storedProfile.weight);
-        if (storedProfile?.height) setHeight(storedProfile.height);
-        setProfileLoaded(true);
-      };
-
-      loadProfile();
-
-      return () => {
-        isActive = false;
-      };
-    }, [])
-  );
-
-  useEffect(() => {
-    if (!profileLoaded || !hasEdited) return;
-
-    mergeStoredProfile({ weight, height });
-  }, [hasEdited, height, profileLoaded, weight]);
-
-  const handleWeightChange = (value: string) => {
-    setHasEdited(true);
-    setWeight(value);
-  };
-
-  const handleHeightChange = (value: string) => {
-    setHasEdited(true);
-    setHeight(value);
-  };
-
-  const bmi = useMemo(() => {
-    const parsedWeight = parseFloat(weight);
-    const parsedHeight = parseFloat(height) / 100;
-
-    if (!parsedWeight || !parsedHeight) return '-';
-
-    return (parsedWeight / (parsedHeight * parsedHeight)).toFixed(1);
-  }, [weight, height]);
-
-  const goal = useMemo(() => {
-    const parsedBmi = parseFloat(bmi);
-    if (!parsedBmi || bmi === '-') return 'Set your metrics';
-    if (parsedBmi < 20) return 'Bulk';
-    if (parsedBmi <= 25) return 'Recomp';
-    return 'Cut';
-  }, [bmi]);
-
-  const targetWeight = useMemo(() => {
-    if (goal === 'Cut') return 76;
-    if (goal === 'Bulk') return 84;
-    if (goal === 'Recomp') return 80;
-    return undefined;
-  }, [goal]);
-
-  const weightTrend = useMemo(
-    () => [
-      { label: 'W1', value: 83.4 },
-      { label: 'W2', value: 82.8 },
-      { label: 'W3', value: 82.2 },
-      { label: 'W4', value: 81.5 },
-      { label: 'W5', value: 81.1 },
-      { label: 'W6', value: 80.6 },
-      { label: 'Now', value: numericWeight },
-    ],
-    [numericWeight]
+      loadInsights();
+    }, [loadInsights]),
   );
 
   return (
@@ -97,74 +42,144 @@ export default function MetricsScreen() {
       <TopNav />
 
       <ScreenHeader
-        kicker="METRICS"
-        title="See progress clearly."
-        subtitle="Body stats, BMI and trend context are grouped here so updates stay simple and readable."
+        kicker="WEEKLY INSIGHTS"
+        title="A sharper read on the week you just built."
+        subtitle="Calories, macro balance, hydration, and habits are aggregated into a single view with a concise weekly summary."
       />
 
-      <LinearGradient
-        colors={['#6F2107', '#0D4B50']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.heroCard}
-      >
-        <Text style={styles.heroKicker}>BODY SNAPSHOT</Text>
-        <Text style={styles.heroValue}>{bmi}</Text>
-        <Text style={styles.heroLabel}>Current BMI</Text>
-
-        <View style={styles.goalPill}>
-          <Text style={styles.goalPillText}>{goal}</Text>
+      {loading ? (
+        <View style={[commonStyles.card, styles.centeredCard]}>
+          <ActivityIndicator color={COLORS.accent} />
+          <Text style={styles.helperCopy}>Building your weekly readout...</Text>
         </View>
-      </LinearGradient>
+      ) : null}
 
-      <View style={commonStyles.sectionRow}>
-        <Text style={commonStyles.sectionTitle}>Update measurements</Text>
-        <Text style={commonStyles.sectionMeta}>Keep it current</Text>
-      </View>
+      {!loading && error ? (
+        <StatePanel title="Insights unavailable" description={error} actionLabel="Try again" onAction={loadInsights} />
+      ) : null}
 
-      <View style={commonStyles.card}>
-        <TextInput
-          style={[commonStyles.input, styles.inputSpacing]}
-          placeholder="Weight (kg)"
-          placeholderTextColor={COLORS.muted}
-          value={weight}
-          onChangeText={handleWeightChange}
-          keyboardType="numeric"
-        />
+      {!loading && !error && insights ? (
+        <>
+          <LinearGradient
+            colors={['#6F2107', '#0D4B50']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroCard}
+          >
+            <Text style={styles.heroKicker}>WEEKLY SUMMARY</Text>
+            <Text style={styles.heroTitle}>{insights.period_start} to {insights.period_end}</Text>
+            <Text style={styles.heroCopy}>{insights.weekly_summary}</Text>
+          </LinearGradient>
 
-        <TextInput
-          style={[commonStyles.input, styles.inputLast]}
-          placeholder="Height (cm)"
-          placeholderTextColor={COLORS.muted}
-          value={height}
-          onChangeText={handleHeightChange}
-          keyboardType="numeric"
-        />
-      </View>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoLabel}>Most common meal</Text>
+              <Text style={styles.infoValue}>{insights.most_common_meal_type}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoLabel}>Strongest habit</Text>
+              <Text style={styles.infoValue}>{insights.strongest_habit}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoLabel}>Weakest habit</Text>
+              <Text style={styles.infoValue}>{insights.weakest_habit}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoLabel}>Average macros</Text>
+              <Text style={styles.infoValue}>
+                P {insights.macro_average.protein} / C {insights.macro_average.carbs} / F {insights.macro_average.fats}
+              </Text>
+            </View>
+          </View>
 
-      <View style={styles.resultGrid}>
-        <View style={styles.resultCard}>
-          <Text style={styles.resultLabel}>Suggested goal</Text>
-          <Text style={styles.resultValue}>{goal}</Text>
-        </View>
+          <TrendChart
+            title="Calories trend"
+            subtitle="Daily calorie totals across the current rolling week."
+            data={insights.calorie_trend}
+            target={insights.goals.daily_calorie_goal}
+            targetLabel="Daily goal"
+            valueFormatter={(value) => `${Math.round(value)} kcal`}
+          />
 
-        <View style={styles.resultCard}>
-          <Text style={styles.resultLabel}>Status</Text>
-          <Text style={styles.resultValue}>{bmi === '-' ? 'Waiting' : 'Tracked'}</Text>
-        </View>
-      </View>
+          <TrendChart
+            title="Macro balance trend"
+            subtitle="This score tracks how closely each day matched your macro goals."
+            data={insights.macro_balance_trend}
+            target={85}
+            targetLabel="Balanced day benchmark"
+            accentColor={COLORS.highlight}
+            valueFormatter={(value) => `${Math.round(value)}/100`}
+          />
 
-      <TrendChart
-        title="Weight evolution"
-        subtitle="This chart is ready for historical weigh-ins once the database stores body measurements."
-        data={weightTrend}
-        accentColor={COLORS.highlight}
-        chartHeight={76}
-        scaleMode="fit"
-        target={targetWeight}
-        targetLabel={targetWeight ? 'Goal weight' : undefined}
-        valueFormatter={(value) => `${value.toFixed(1)} kg`}
-      />
+          <TrendChart
+            title="Hydration trend"
+            subtitle="Hydration adherence over the same weekly window."
+            data={insights.hydration_trend}
+            target={insights.goals.water_goal_ml}
+            targetLabel="Daily water goal"
+            accentColor="#54D2FF"
+            valueFormatter={(value) => `${Math.round(value)} ml`}
+          />
+        </>
+      ) : null}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  centeredCard: {
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  helperCopy: {
+    color: COLORS.subtitle,
+    fontSize: 14,
+  },
+  heroCard: {
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    marginBottom: SPACING.section,
+    borderWidth: 1,
+    borderColor: COLORS.borderSoft,
+    gap: SPACING.md,
+  },
+  heroKicker: {
+    color: COLORS.highlight,
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  heroTitle: {
+    color: COLORS.text,
+    fontSize: 28,
+    fontWeight: '900',
+  },
+  heroCopy: {
+    color: COLORS.subtitle,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  infoGrid: {
+    gap: SPACING.md,
+    marginBottom: SPACING.section,
+  },
+  infoCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.borderSoft,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+  },
+  infoLabel: {
+    color: COLORS.muted,
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  infoValue: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 24,
+  },
+});

@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+import { invalidateSession, isJwtToken } from '../auth/session';
+
 function resolveDefaultApiUrl() {
   const explicitApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
 
@@ -27,7 +29,7 @@ export const API_BASE_URL = resolveDefaultApiUrl();
 
 const API = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000,
+  timeout: 10000,
 });
 
 API.interceptors.request.use(async (config) => {
@@ -35,5 +37,22 @@ API.interceptors.request.use(async (config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+API.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error?.response?.status;
+    const authHeader = error?.config?.headers?.Authorization;
+
+    if (status === 401 && typeof authHeader === 'string') {
+      const token = authHeader.replace(/^Bearer\s+/i, '');
+      if (isJwtToken(token)) {
+        await invalidateSession();
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export default API;

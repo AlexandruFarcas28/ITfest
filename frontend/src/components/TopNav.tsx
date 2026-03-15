@@ -16,11 +16,11 @@ type AppRoute =
 
 const tabs: { label: string; path: AppRoute }[] = [
   { label: 'Home', path: '/(tabs)/home' },
-  { label: 'Food', path: '/(tabs)/nutrition' },
+  { label: 'Meals', path: '/(tabs)/nutrition' },
   { label: 'Water', path: '/(tabs)/water' },
-  { label: 'Metrics', path: '/(tabs)/metrics' },
-  { label: 'Plans', path: '/(tabs)/plans' },
-  { label: 'Top', path: '/(tabs)/leaderboard' },
+  { label: 'Insights', path: '/(tabs)/metrics' },
+  { label: 'Goals', path: '/(tabs)/plans' },
+  { label: 'Rewards', path: '/(tabs)/leaderboard' },
   { label: 'Scan', path: '/(tabs)/meal-scan' },
   { label: 'Profile', path: '/(tabs)/profile' },
 ];

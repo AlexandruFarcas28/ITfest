@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import AuthScreen from '../src/screens/AuthScreen';
+import { getStoredSession } from '../src/auth/session';
 import { COLORS } from '../src/styles/theme';
 
 type User = {
@@ -18,17 +18,15 @@ export default function Index() {
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const saved = await AsyncStorage.getItem('user');
+        const session = await getStoredSession();
 
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setUser(parsed);
+        if (session) {
+          setUser(session.user);
           router.replace('/(tabs)/home');
           return;
         }
       } catch (err) {
         console.log('checkLogin error:', err);
-        await Promise.all([AsyncStorage.removeItem('token'), AsyncStorage.removeItem('user')]);
       } finally {
         setLoading(false);
       }

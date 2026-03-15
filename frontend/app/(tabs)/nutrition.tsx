@@ -1,170 +1,281 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
+
+import MealHistoryCard from '../../src/components/MealHistoryCard';
 import ScreenHeader from '../../src/components/ScreenHeader';
+import StatePanel from '../../src/components/StatePanel';
 import TopNav from '../../src/components/TopNav';
 import InteractivePressable from '../../src/components/InteractivePressable';
 import TrendChart from '../../src/components/TrendChart';
 import {
-  appendNutritionEntry,
-  getStoredNutritionEntries,
-  type NutritionEntry,
-} from '../../src/storage/nutrition';
+  createMealEntry,
+  deleteMealEntry,
+  fetchMealHistory,
+  repeatMealEntry,
+  updateMealEntry,
+} from '../../src/api/health';
 import { commonStyles } from '../../src/styles/common';
-import { COLORS } from '../../src/styles/theme';
-import { nutritionScreenStyles as styles } from '../../src/styles/screens/tabs';
+import { COLORS, RADIUS, SPACING } from '../../src/styles/theme';
+import type { MealHistoryResponse } from '../../src/types/health';
+
+const emptyManualForm = {
+  name: '',
+  calories: '',
+  protein: '',
+  carbs: '',
+  fats: '',
+};
 
 export default function NutritionScreen() {
-  const [foodName, setFoodName] = useState('');
-  const [foods, setFoods] = useState<NutritionEntry[]>([]);
+  const [history, setHistory] = useState<MealHistoryResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [manualForm, setManualForm] = useState(emptyManualForm);
+
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const payload = await fetchMealHistory(14, 24);
+      setHistory(payload);
+    } catch (loadError: any) {
+      setError(loadError?.response?.data?.error || loadError?.message || 'Could not load meal history.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
-
-      const loadEntries = async () => {
-        const storedEntries = await getStoredNutritionEntries();
-
-        if (!isActive) return;
-        setFoods(storedEntries);
-      };
-
-      loadEntries();
-
-      return () => {
-        isActive = false;
-      };
-    }, [])
-  );
-
-  const addFood = async () => {
-    if (!foodName.trim()) return;
-
-    const createdEntry = await appendNutritionEntry({
-      name: foodName.trim(),
-      calories: 100,
-      protein: 0,
-      carbs: 0,
-      fats: 0,
-      source: 'manual',
-      note: 'manual entry',
-    });
-
-    setFoods((current) => [...current, createdEntry]);
-    setFoodName('');
-  };
-
-  const total = useMemo(
-    () => foods.reduce((sum, food) => sum + food.calories, 0),
-    [foods]
-  );
-  const totalProtein = useMemo(
-    () => foods.reduce((sum, food) => sum + food.protein, 0),
-    [foods]
-  );
-  const totalCarbs = useMemo(
-    () => foods.reduce((sum, food) => sum + food.carbs, 0),
-    [foods]
-  );
-  const totalFats = useMemo(
-    () => foods.reduce((sum, food) => sum + food.fats, 0),
-    [foods]
+      loadHistory();
+    }, [loadHistory]),
   );
 
   const calorieTrend = useMemo(
-    () => [
-      { label: 'Mon', value: 1680 },
-      { label: 'Tue', value: 1740 },
-      { label: 'Wed', value: 1810 },
-      { label: 'Thu', value: 1650 },
-      { label: 'Fri', value: 1900 },
-      { label: 'Sat', value: 1760 },
-      { label: 'Now', value: total },
-    ],
-    [total]
+    () =>
+      (history?.daily_totals || []).map((day) => ({
+        label: day.label,
+        value: day.total_calories,
+      })),
+    [history],
   );
+
+  const addManualMeal = async () => {
+    if (!manualForm.name.trim()) {
+      Alert.alert('Meal required', 'Add a meal name first.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await createMealEntry({
+        name: manualForm.name.trim(),
+        calories: Number(manualForm.calories) || 0,
+        protein: Number(manualForm.protein) || 0,
+        carbs: Number(manualForm.carbs) || 0,
+        fats: Number(manualForm.fats) || 0,
+        source: 'manual',
+      });
+      setManualForm(emptyManualForm);
+      await loadHistory();
+    } catch (saveError: any) {
+      Alert.alert('Save failed', saveError?.message || 'Could not save this meal.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = async (
+    entryId: string,
+    payload: {
+      name: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fats: number;
+    },
+  ) => {
+    await updateMealEntry(entryId, payload);
+    await loadHistory();
+  };
+
+  const handleRepeat = async (entryId: string) => {
+    try {
+      await repeatMealEntry(entryId);
+      await loadHistory();
+      Alert.alert('Meal repeated', 'A copy was added to today.');
+    } catch (repeatError: any) {
+      Alert.alert('Repeat failed', repeatError?.message || 'Could not repeat this meal.');
+    }
+  };
+
+  const handleToggleFavorite = async (entryId: string, nextValue: boolean) => {
+    try {
+      await updateMealEntry(entryId, { favorite: nextValue });
+      await loadHistory();
+    } catch (favoriteError: any) {
+      Alert.alert('Update failed', favoriteError?.message || 'Could not update favorite status.');
+    }
+  };
+
+  const handleDelete = async (entryId: string) => {
+    await deleteMealEntry(entryId);
+    await loadHistory();
+  };
+
+  const inputStyle = {
+    backgroundColor: COLORS.cardInner,
+    borderWidth: 1,
+    borderColor: COLORS.borderSoft,
+    borderRadius: RADIUS.md,
+    color: COLORS.text,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    minHeight: 50,
+    fontSize: 15,
+  } as const;
 
   return (
     <ScrollView contentContainerStyle={commonStyles.screen} showsVerticalScrollIndicator={false}>
       <TopNav />
 
       <ScreenHeader
-        kicker="NUTRITION"
-        title="Track meals with less friction."
-        subtitle="Keep calories and macros visible, then add quick entries or scanned meals without clutter."
+        kicker="SMART LOGGING"
+        title="Your meal history is now built for repeatability."
+        subtitle="Save AI scans, edit nutrition after corrections, favorite reliable meals, and replay them into today with one tap."
       />
-
-      <LinearGradient
-        colors={['#0D4B50', '#6F2107']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.summaryCard}
-      >
-        <Text style={styles.summaryKicker}>DAILY INTAKE</Text>
-        <Text style={styles.summaryValue}>{total} kcal</Text>
-        <Text style={styles.summaryCopy}>
-          Protein {Math.round(totalProtein)}g / Carbs {Math.round(totalCarbs)}g / Fats {Math.round(totalFats)}g
-        </Text>
-
-        <View style={styles.macroRow}>
-          <View style={styles.macroChip}>
-            <Text style={styles.macroChipValue}>
-              {Math.min(Math.round((total / 2000) * 100), 999)}%
-            </Text>
-            <Text style={styles.macroChipLabel}>goal reached</Text>
-          </View>
-          <View style={styles.macroChip}>
-            <Text style={styles.macroChipValue}>{foods.length}</Text>
-            <Text style={styles.macroChipLabel}>meals logged</Text>
-          </View>
-        </View>
-      </LinearGradient>
-
-      <TrendChart
-        title="Calorie trend"
-        subtitle="This section is ready for meal history once your backend saves daily nutrition entries."
-        data={calorieTrend}
-        accentColor={COLORS.accent}
-        target={2000}
-        targetLabel="Daily target"
-        valueFormatter={(value) => `${Math.round(value)} kcal`}
-      />
-
-      <View style={commonStyles.sectionRow}>
-        <Text style={commonStyles.sectionTitle}>Quick add</Text>
-        <Text style={commonStyles.sectionMeta}>Keep it lightweight</Text>
-      </View>
 
       <View style={commonStyles.card}>
+        <Text style={styles.sectionTitle}>Quick manual log</Text>
+        <Text style={styles.sectionCopy}>Use this when you know the numbers and want a fast entry.</Text>
+
         <TextInput
-          style={[commonStyles.input, styles.inputNoMargin]}
-          placeholder="Enter food name"
+          style={[inputStyle, { marginBottom: SPACING.sm }]}
+          placeholder="Meal name"
           placeholderTextColor={COLORS.muted}
-          value={foodName}
-          onChangeText={setFoodName}
+          value={manualForm.name}
+          onChangeText={(value) => setManualForm((current) => ({ ...current, name: value }))}
         />
-        <InteractivePressable style={commonStyles.primaryButton} onPress={addFood}>
-          <Text style={commonStyles.primaryButtonText}>Add to log</Text>
+
+        <View style={styles.inputRow}>
+          {[
+            ['calories', 'Calories'],
+            ['protein', 'Protein'],
+            ['carbs', 'Carbs'],
+            ['fats', 'Fats'],
+          ].map(([field, label]) => (
+            <TextInput
+              key={field}
+              style={[inputStyle, styles.macroInput]}
+              placeholder={label}
+              placeholderTextColor={COLORS.muted}
+              keyboardType="numeric"
+              value={manualForm[field as keyof typeof manualForm]}
+              onChangeText={(value) =>
+                setManualForm((current) => ({
+                  ...current,
+                  [field]: value,
+                }))
+              }
+            />
+          ))}
+        </View>
+
+        <InteractivePressable style={commonStyles.primaryButton} onPress={addManualMeal} disabled={saving}>
+          <Text style={commonStyles.primaryButtonText}>{saving ? 'Saving...' : 'Add manual meal'}</Text>
         </InteractivePressable>
       </View>
 
-      <View style={commonStyles.sectionRow}>
-        <Text style={commonStyles.sectionTitle}>Food list</Text>
-        <Text style={commonStyles.sectionMeta}>{foods.length} items</Text>
-      </View>
-
-      {foods.map((food, index) => (
-        <View key={`${food.name}-${index}`} style={styles.foodCard}>
-          <View style={styles.foodContent}>
-            <Text style={styles.foodName}>{food.name}</Text>
-            <Text style={styles.foodHint}>{food.note || `${food.source} entry`}</Text>
-          </View>
-          <View style={styles.caloriePill}>
-            <Text style={styles.calorieText}>{food.calories} kcal</Text>
-          </View>
+      {loading ? (
+        <View style={[commonStyles.card, styles.centeredCard]}>
+          <ActivityIndicator color={COLORS.accent} />
+          <Text style={styles.sectionCopy}>Loading meal history...</Text>
         </View>
-      ))}
+      ) : null}
+
+      {!loading && error ? (
+        <StatePanel
+          title="History unavailable"
+          description={error}
+          actionLabel="Try again"
+          onAction={loadHistory}
+        />
+      ) : null}
+
+      {!loading && !error && history ? (
+        <>
+          <TrendChart
+            title="Two-week calorie trend"
+            subtitle="This trend is derived from saved meals, so future analytics can build directly on this history."
+            data={calorieTrend}
+            target={2000}
+            targetLabel="Reference target"
+            valueFormatter={(value) => `${Math.round(value)} kcal`}
+          />
+
+          <View style={commonStyles.sectionRow}>
+            <Text style={commonStyles.sectionTitle}>History snapshot</Text>
+            <Text style={commonStyles.sectionMeta}>
+              {history.stats.logged_meal_count} meals • {history.stats.favorite_count} favorites
+            </Text>
+          </View>
+
+          {history.items.length === 0 ? (
+            <StatePanel
+              title="No meals saved yet"
+              description="Scan a meal or add a manual entry to start building a reusable meal history."
+            />
+          ) : (
+            <View style={styles.historyList}>
+              {history.items.map((entry) => (
+                <MealHistoryCard
+                  key={entry.id}
+                  entry={entry}
+                  onSave={handleEdit}
+                  onRepeat={handleRepeat}
+                  onToggleFavorite={handleToggleFavorite}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </View>
+          )}
+        </>
+      ) : null}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  sectionTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  sectionCopy: {
+    color: COLORS.subtitle,
+    fontSize: 14,
+    lineHeight: 21,
+    marginBottom: SPACING.md,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  macroInput: {
+    flexBasis: '48%',
+    flexGrow: 1,
+  },
+  centeredCard: {
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  historyList: {
+    gap: SPACING.md,
+  },
+});
