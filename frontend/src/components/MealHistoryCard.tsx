@@ -54,6 +54,7 @@ export default function MealHistoryCard({
     if (!entry.user_corrections) return null;
     return 'Edited by user';
   }, [entry.user_corrections]);
+  const mealImageUri = entry.image_url || entry.image_uri;
 
   const handleSave = async () => {
     if (!form.name.trim()) {
@@ -118,9 +119,9 @@ export default function MealHistoryCard({
         gap: SPACING.md,
       }}
     >
-      {entry.image_uri ? (
+      {mealImageUri ? (
         <Image
-          source={{ uri: entry.image_uri }}
+          source={{ uri: mealImageUri }}
           style={{ width: '100%', height: 180, borderRadius: RADIUS.lg }}
         />
       ) : null}

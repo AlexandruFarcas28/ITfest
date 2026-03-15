@@ -64,6 +64,11 @@ export type MealEntry = {
   carbs: number;
   fats: number;
   image_uri?: string | null;
+  image_url?: string | null;
+  image_file_id?: string | null;
+  image_storage?: string | null;
+  image_filename?: string | null;
+  image_content_type?: string | null;
   analysis_mode: string;
   detected_foods: string[];
   ai_description?: string | null;
@@ -111,6 +116,11 @@ export type MealCoachResult = {
   analysis_mode: string;
   meal_name: string;
   meal_type: string;
+  image_url?: string | null;
+  image_file_id?: string | null;
+  image_storage?: string | null;
+  image_filename?: string | null;
+  image_content_type?: string | null;
   detected_foods: string[];
   estimated_calories: number | null;
   protein_g: number | null;

@@ -5,10 +5,12 @@ from flask import Blueprint, jsonify, request
 try:
     from ..auth_utils import get_optional_user_id
     from ..db import mongo
+    from ..services.image_storage import save_uploaded_image
     from ..services.meal_coach import generate_meal_coach
 except ImportError:
     from auth_utils import get_optional_user_id
     from db import mongo
+    from services.image_storage import save_uploaded_image
     from services.meal_coach import generate_meal_coach
 
 meal_ai_bp = Blueprint("meal_ai", __name__)
@@ -36,7 +38,16 @@ def estimate_meal():
         user = mongo.db.users.find_one({"_id": ObjectId(optional_user_id)})
 
     try:
-        return jsonify(generate_meal_coach(mongo.db, image_bytes, image_mime_type, user=user)), 200
+        meal_analysis = generate_meal_coach(mongo.db, image_bytes, image_mime_type, user=user)
+        image_reference = save_uploaded_image(
+            mongo.db,
+            image_bytes=image_bytes,
+            content_type=image_mime_type,
+            filename=image_file.filename,
+            user_id=optional_user_id,
+            source="meal_ai",
+        )
+        return jsonify({**meal_analysis, **image_reference}), 200
     except requests.Timeout:
         return jsonify({
             "error": "Gemini request timed out",

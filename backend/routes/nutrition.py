@@ -14,6 +14,7 @@ try:
         serialize_meal,
         sum_entries,
     )
+    from ..services.image_storage import build_entry_image_fields
     from ..services.user_goals import resolve_user_targets
     from ..utils.dates import today_str
 except ImportError:
@@ -27,6 +28,7 @@ except ImportError:
         serialize_meal,
         sum_entries,
     )
+    from services.image_storage import build_entry_image_fields
     from services.user_goals import resolve_user_targets
     from utils.dates import today_str
 
@@ -57,7 +59,6 @@ def _build_entry_payload(data: dict, user_id: str, existing: dict | None = None)
         "source": str(data.get("source") or base.get("source") or "manual"),
         "favorite": bool(data.get("favorite", base.get("favorite", False))),
         "repeatable": bool(data.get("repeatable", base.get("repeatable", True))),
-        "image_uri": data.get("image_uri") or base.get("image_uri"),
         "analysis_mode": data.get("analysis_mode") or base.get("analysis_mode") or "manual",
         "detected_foods": list(data.get("detected_foods") or base.get("detected_foods") or []),
         "ai_description": data.get("ai_description") or base.get("ai_description"),
@@ -71,6 +72,7 @@ def _build_entry_payload(data: dict, user_id: str, existing: dict | None = None)
         "notes": data.get("notes") or base.get("notes"),
         "created_at": base.get("created_at") or data.get("created_at") or now,
         "updated_at": now,
+        **build_entry_image_fields(data, existing=base),
     }
 
 

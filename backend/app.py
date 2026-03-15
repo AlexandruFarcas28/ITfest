@@ -9,6 +9,7 @@ try:
   from .routes.auth import auth_bp
   from .routes.dashboard import dashboard_bp
   from .routes.gamification import gamification_bp
+  from .routes.images import images_bp
   from .routes.insights import insights_bp
   from .routes.meal_ai import meal_ai_bp
   from .routes.nutrition import nutrition_bp
@@ -19,6 +20,7 @@ except ImportError:
   from routes.auth import auth_bp
   from routes.dashboard import dashboard_bp
   from routes.gamification import gamification_bp
+  from routes.images import images_bp
   from routes.insights import insights_bp
   from routes.meal_ai import meal_ai_bp
   from routes.nutrition import nutrition_bp
@@ -73,6 +75,7 @@ def create_app():
   app.register_blueprint(dashboard_bp)
   app.register_blueprint(insights_bp)
   app.register_blueprint(gamification_bp)
+  app.register_blueprint(images_bp)
   app.register_blueprint(meal_ai_bp, url_prefix="/api")
 
   @app.get("/")
@@ -91,6 +94,7 @@ def create_app():
         "/api/dashboard",
         "/api/insights/weekly",
         "/api/gamification",
+        "/api/images/<image_id>",
         "/api/ai/estimate-meal",
       ],
     }

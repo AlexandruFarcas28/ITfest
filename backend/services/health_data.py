@@ -4,9 +4,11 @@ from collections import Counter
 from datetime import datetime
 
 try:
+    from .image_storage import serialize_entry_image_fields
     from .user_goals import resolve_user_targets
     from ..utils.dates import daterange, today_str, weekday_label
 except ImportError:
+    from services.image_storage import serialize_entry_image_fields
     from services.user_goals import resolve_user_targets
     from utils.dates import daterange, today_str, weekday_label
 
@@ -65,7 +67,6 @@ def serialize_meal(entry: dict) -> dict:
         "protein": _as_int(entry.get("protein")),
         "carbs": _as_int(entry.get("carbs")),
         "fats": _as_int(entry.get("fats")),
-        "image_uri": entry.get("image_uri"),
         "analysis_mode": str(entry.get("analysis_mode") or "manual"),
         "detected_foods": list(entry.get("detected_foods") or []),
         "ai_description": entry.get("ai_description"),
@@ -76,6 +77,7 @@ def serialize_meal(entry: dict) -> dict:
         "later_meal_suggestion": entry.get("later_meal_suggestion"),
         "notes": entry.get("notes"),
         "user_corrections": entry.get("user_corrections"),
+        **serialize_entry_image_fields(entry),
     }
 
 
